@@ -127,5 +127,71 @@ return array(
 		'editorScript' => 'file:./index.js',
 		'viewScriptModule' => 'file:./view.js',
 		'style' => 'file:./style-index.css'
+	),
+	'post-grid' => array(
+		'$schema' => 'https://schemas.wp.org/trunk/block.json',
+		'apiVersion' => 3,
+		'name' => 'livemuseum/post-grid',
+		'version' => '1.0.0',
+		'title' => 'LiveMuseum — Post Grid',
+		'category' => 'widgets',
+		'icon' => 'grid-view',
+		'description' => 'Griglia di post con infinite scroll. Sorgente: tutti, categoria corrente (archivio) o categorie selezionate.',
+		'textdomain' => 'livemuseum',
+		'supports' => array(
+			'html' => false,
+			'align' => array(
+				'full',
+				'wide'
+			)
+		),
+		'attributes' => array(
+			'heading' => array(
+				'type' => 'string',
+				'default' => ''
+			),
+			'linkLabel' => array(
+				'type' => 'string',
+				'default' => ''
+			),
+			'linkUrl' => array(
+				'type' => 'string',
+				'default' => ''
+			),
+			'postSource' => array(
+				'type' => 'string',
+				'default' => 'all',
+				'enum' => array(
+					'all',
+					'current_category',
+					'fixed_categories'
+				)
+			),
+			'categoryIds' => array(
+				'type' => 'array',
+				'default' => array(
+					
+				),
+				'items' => array(
+					'type' => 'number'
+				)
+			),
+			'initialCount' => array(
+				'type' => 'number',
+				'default' => 12
+			),
+			'batchSize' => array(
+				'type' => 'number',
+				'default' => 12
+			),
+			'maxPosts' => array(
+				'type' => 'number',
+				'default' => 200
+			)
+		),
+		'render' => 'file:./render.php',
+		'editorScript' => 'file:./index.js',
+		'viewScriptModule' => 'file:./view.js',
+		'style' => 'file:./style-index.css'
 	)
 );

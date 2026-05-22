@@ -25,6 +25,7 @@ livemuseum/
 ├── src/
 │   ├── carousel-featured/       # Carousel home — slide centrale ingrandita 3D
 │   ├── carousel-flat/           # Carousel home/related — card unificate
+│   ├── post-grid/               # Griglia post con infinite scroll
 │   ├── shared/                  # Logica condivisa fra blocchi (carousel-nav)
 │   └── style/                   # Stile globale del child theme (SCSS)
 │       ├── style.scss           # Entry point — @use dei parziali
@@ -97,6 +98,7 @@ npm run test:unit
 |---|---|---|
 | `src/carousel-featured/__tests__/logic.test.js` | `src/carousel-featured/logic.js` | `nextIndex`/`prevIndex` (wrap circolare), `slideOffset` (percorso più corto), `slideTransform` (offset/opacity/zIndex/pointer-events su centro, adiacente, oltre visibilità), `boxTransform`, `visibleIndices` |
 | `src/carousel-flat/__tests__/logic.test.js` | `src/carousel-flat/logic.js` | Re-export della navigazione circolare condivisa + `cardTransform` (offset preservato, opacity sempre 1) |
+| `src/post-grid/__tests__/logic.test.js` | `src/post-grid/logic.js` | `isCardVisible` (index vs visibleCount), `nextCount` (incremento con saturazione al totale), `hasMore` |
 
 `wp-scripts test-unit-js` rileva automaticamente i `*.test.js` sotto `src/` — nessuna configurazione.
 
@@ -220,13 +222,88 @@ Carousel con due rail orizzontali sincronizzati su `currentIndex` e wrap circola
 
 ### 2. Carousel Flat (`livemuseum/carousel-flat`)
 
-> 🚧 **In sviluppo.** Variante "piatta" del carousel per la home page, senza ingrandimento centrale. Stessa sorgente post e logica di navigazione del [Carousel Featured](#1-carousel-featured-livemuseumcarousel-featured), grafica diversa. Documentazione completata quando il blocco sarà implementato.
+Carousel orizzontale con **card unificate** (immagine + meta + titolo overlay come singolo blocco), pensato sia per la home page (con selezione categoria) sia per la sezione "related" nella single (con scelta tra stessi tag / stesse categorie). Stessa intestazione `.lm-section-header` del featured.
+
+**Layout della card:**
+- Barra meta in alto: categoria (badge nero su sfondo bianco) a sinistra, data a destra. Bordo orizzontale superiore come separatore con la card adiacente (no gap tra card).
+- Immagine sotto la barra meta.
+- Titolo overlay con sfondo bianco e bordo, posizionato a `bottom: -1.25rem` in modo da sporgere leggermente sotto l'immagine.
+
+**Due varianti grafiche (attributo `variant`):**
+
+| Variante | Card | Immagine | Note |
+|---|---|---|---|
+| `arch` (default) | 445×480 | 445×435 con `border-radius: 50% 50% 0 0` (arco) | Variante home page principale |
+| `square` | 445×470 | 445×420 senza arrotondamenti | Variante quadrata |
+
+**Attributi blocco:**
+
+| Attributo | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `heading` | string | "News" | Titolo testata |
+| `linkLabel` / `linkUrl` | string | "Scopri di più" / "" | Link "scopri di più" opzionale |
+| `variant` | `arch` \| `square` | `arch` | Variante grafica |
+| `postSource` | enum (6 valori) | `all` | Sorgente — vedi sotto |
+| `categoryIds` | int[] | `[]` | Usato solo con `postSource = fixed_categories` |
+| `postCount` | number | 20 | Massimo numero di card |
+
+**Valori di `postSource`:**
+
+| Valore | Comportamento |
+|---|---|
+| `all` | Tutti i post |
+| `current_category` | Solo i post della categoria visualizzata (template archivio); fuori contesto → tutti i post |
+| `fixed_categories` | Filtro su `categoryIds` |
+| `same_tags` | Related: stessi tag del post corrente (solo in single, fuori → tutti) |
+| `same_categories` | Related: stesse categorie del post corrente (solo in single) |
+| `same_tags_or_categories` | Related: stessi tag OR stesse categorie (`tax_query` con `relation: OR`) |
+
+Nelle modalità related il post corrente viene escluso (`post__not_in`).
+
+**Interattività:** frecce navigazione (in basso, ai lati con `justify-content: space-between`), tastiera `←`/`→`, swipe touch (soglia 50px, `touch-action: pan-y`). Lazy-load thumbnail nelle card vicine (range ±2 dal `currentIndex`). Stesso pattern del featured per snap istantaneo al primo render + wrap-detection.
+
+**Mobile (≤ 768px):** card a full-width (`calc(100% - 3rem)` con 1.5rem di margin dal bordo), una per volta.
+
+**Architettura:** stesso pattern del rail box di carousel-featured — CSS grid 1×1 con tutte le card nella stessa cella, JS setta `--lm-cfl-offset`, CSS calcola `translateX(offset * card-step)`. La navigazione circolare è in `src/shared/carousel-nav.js`, riutilizzata da entrambi i blocchi.
 
 ---
 
-### 3. Related Carousel (`livemuseum/related-carousel`)
+### 3. Post Grid (`livemuseum/post-grid`)
 
-> 🚧 **In sviluppo.** Carousel "articoli correlati" per la single. Sorgente derivata dall'articolo corrente con criterio di corrispondenza selezionabile: stesse categorie, stessi tag, o entrambi.
+Griglia di post con **infinite scroll**. Card identica al box quadrato del [Carousel Flat](#2-carousel-flat-livemuseumcarousel-flat) (445×470, immagine 420 senza arrotondamento, titolo overlay con sfondo bianco). Layout responsive via CSS grid `auto-fill` con gap 10px.
+
+**Attributi blocco:**
+
+| Attributo | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `heading` / `linkLabel` / `linkUrl` | string | `""` | Testata opzionale (omessa se `heading` e `linkUrl` sono vuoti) |
+| `postSource` | `all` \| `current_category` \| `fixed_categories` | `all` | Sorgente — stessa semantica del carousel-flat |
+| `categoryIds` | int[] | `[]` | Usato solo con `postSource = fixed_categories` |
+| `initialCount` | number | 12 | Card visibili al primo render |
+| `batchSize` | number | 12 | Quante card aggiungere ad ogni trigger di scroll |
+| `maxPosts` | number | 200 | Limite massimo di post renderizzati dal server |
+
+**Infinite scroll:**
+
+- Tutti i post (fino a `maxPosts`) sono renderizzati lato server. Il JS controlla la visibilità via classe `is-hidden` sui card con `index >= visibleCount`.
+- Un `<div class="lm-post-grid__sentinel">` posizionato dopo la grid è osservato da `IntersectionObserver` con `rootMargin: 300px`. Al rilevamento, `visibleCount` cresce di `batchSize`.
+- Se la sentinel resta intersecata anche dopo l'incremento (viewport tall / pochi post), `loadMore()` si rilancia ricorsivamente in `requestAnimationFrame` finché esce dal trigger area o `visibleCount === total`.
+- Lazy-load delle thumbnail: le `<img>` partono con `data-src`, il callback `applyVisibility` setta `src = dataset.src` solo per le card visibili e rimuove `data-src` al `load`/`error` per innescare il fade-in CSS.
+
+**Stato (Interactivity API):**
+
+| Context | Descrizione |
+|---|---|
+| `visibleCount` | Numero di card attualmente visibili |
+| `total` | Totale dei post server-rendered |
+| `batchSize` | Incremento per ogni step |
+
+**Callback:**
+
+| Callback | Trigger | Cosa fa |
+|---|---|---|
+| `init` | `data-wp-init` | Applica visibilità iniziale + lazy-load + setup `IntersectionObserver` sulla sentinel |
+| `applyVisibility` | `data-wp-watch` (al cambio di `visibleCount`) | Aggiorna le classi `is-hidden`/`is-loading`, carica le nuove thumbnail, mostra il messaggio "fine risultati" quando esaurito |
 
 ---
 

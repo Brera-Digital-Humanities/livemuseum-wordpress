@@ -1,0 +1,140 @@
+@use '../style/variables' as *;
+@use '../style/section-header';
+
+// Post grid con infinite scroll. Card visualmente identica al box quadrato
+// di carousel-flat (445×470, immagine 420 senza arrotondamento).
+// Layout: CSS grid auto-fill responsive, gap 10px.
+
+.lm-post-grid {
+	--lm-pg-card-w: 445px;
+	--lm-pg-card-h: 470px;
+	--lm-pg-image-h: 420px;
+	--lm-pg-gap: 10px;
+
+	@media ( max-width: 768px ) {
+		--lm-pg-card-w: calc( 100% - 3rem );
+		--lm-pg-card-h: auto;
+		--lm-pg-image-h: 70vw;
+	}
+
+	position: relative;
+	width: 100%;
+	color: $color-contrast;
+	font-family: $font-primary;
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat( auto-fill, minmax( var(--lm-pg-card-w), 1fr ) );
+		gap: var(--lm-pg-gap);
+		justify-content: center;
+		margin-top: 2rem;
+	}
+
+	@media ( max-width: 768px ) {
+		&__grid {
+			grid-template-columns: 1fr;
+			justify-items: center;
+		}
+	}
+
+	&__card {
+		position: relative;
+		width: var(--lm-pg-card-w);
+		height: var(--lm-pg-card-h);
+
+		&.is-hidden {
+			display: none;
+		}
+	}
+
+	&__link {
+		display: block;
+		position: relative;
+		width: 100%;
+		height: 100%;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	&__meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.2rem 0;
+		border-top: 1px solid $color-contrast;
+	}
+
+	&__category {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.15rem 0.5rem;
+		font-size: $fs-label;
+		letter-spacing: 0.03em;
+		background: $color-contrast;
+		color: #fff;
+	}
+
+	&__date {
+		font-size: $fs-label;
+		color: inherit;
+	}
+
+	&__media {
+		position: relative;
+		width: 100%;
+		height: var(--lm-pg-image-h);
+		overflow: hidden;
+		background-color: rgba( 0, 0, 0, 0.04 );
+		margin-top: 0.75rem;
+	}
+
+	&__image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: opacity 0.5s ease;
+
+		&[data-src],
+		&.is-loading {
+			opacity: 0;
+		}
+	}
+
+	// Titolo overlay sull'immagine, in basso.
+	&__title {
+		position: absolute;
+		left: 0.5rem;
+		right: 0.5rem;
+		bottom: 0.5rem;
+		margin: 0;
+		padding: 0.5rem;
+		background: #fff;
+		font-size: $fs-title-small;
+		font-weight: 500;
+		line-height: 1.25;
+		color: $color-contrast;
+	}
+
+	// Sentinel invisibile, osservata da IntersectionObserver.
+	&__sentinel {
+		width: 100%;
+		height: 1px;
+		pointer-events: none;
+	}
+
+	&__status {
+		display: none;
+		text-align: center;
+		padding: 2rem 1rem;
+		font-size: $fs-label;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: $color-contrast;
+
+		&.is-visible {
+			display: block;
+		}
+	}
+}
