@@ -1,6 +1,6 @@
 # LiveMuseum
 
-Child theme WordPress di **Twenty Twenty-Five** per il sito LiveMuseum: catalogo/archivio di post WordPress standard organizzati per categorie, con caroselli interattivi in home page e correlati nella scheda articolo. Il tema integra blocchi Gutenberg custom basati sulla **WordPress Interactivity API**.
+Child theme WordPress di **Twenty Twenty-Five** per il sito LiveMuseum: catalogo/archivio di post WordPress standard organizzati per categorie. Integra quattro blocchi Gutenberg custom — due caroselli (uno con effetto 3D, uno piatto con due varianti grafiche), una griglia post con infinite scroll, e un header di sezione standalone — server-rendered in PHP, con interattività affidata alla **WordPress Interactivity API** dove serve.
 
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-blue.svg)](LICENSE)
 
@@ -36,7 +36,7 @@ livemuseum/
 │       ├── _main-navbar.scss
 │       ├── _blocks.scss
 │       └── _section-header.scss # Componente condiviso (header sezione)
-├── build/                       # File compilati (non versionati)
+├── build/                       # File compilati — versionati nel repo (vedi sotto)
 ├── .github/workflows/           # CI + release GitHub Actions
 ├── functions.php
 ├── style.css                    # Header child theme (regole reali in src/style/)
@@ -61,7 +61,7 @@ git add .
 git commit -m "chore: scaffolding iniziale"
 ```
 
-`build/` e `node_modules/` sono già esclusi via `.gitignore`.
+`node_modules/` è escluso via `.gitignore`. `build/` è invece versionata (vedi sezione Build).
 
 ---
 
@@ -128,9 +128,10 @@ Il file alla radice `style.css` resta solo come header child theme richiesto da 
 ```scss
 $font-primary:   var(--wp--preset--font-family--instrument-sans, sans-serif);
 $color-contrast: var(--wp--preset--color--contrast, #221919);
-$fs-label: var(--wp--preset--font-size--small,    0.875rem);
-$fs-body:  var(--wp--preset--font-size--medium,   1rem);
-$fs-title: var(--wp--preset--font-size--large,    1.5rem);
+$fs-label:       var(--wp--preset--font-size--small,    0.875rem); // ~14px
+$fs-body:        var(--wp--preset--font-size--medium,   1rem);     // ~16px
+$fs-title:       var(--wp--preset--font-size--x-large,  1.5rem);   // ~24px
+$fs-title-small: var(--wp--preset--font-size--large,    1.3rem);   // titolo card post-grid
 ```
 
 Modifiche a palette/scala tipografica nel Site Editor o in `theme.json` si propagano all'SCSS senza ricompilare.
@@ -160,7 +161,7 @@ Header di sezione riutilizzabile in più blocchi e template part. Bordo superior
 
 ## Blocchi custom
 
-> Tutti i blocchi del tema usano solo dati nativi WordPress: titolo, estratto, featured image, categorie, tag, permalink. Nessun campo ACF, nessuna tassonomia custom.
+> Tutti i blocchi del tema usano solo dati nativi WordPress: titolo, estratto, featured image, categorie, tag, permalink.
 
 ### 1. Carousel Featured (`livemuseum/carousel-featured`)
 
@@ -226,16 +227,16 @@ Carousel con due rail orizzontali sincronizzati su `currentIndex` e wrap circola
 Carousel orizzontale con **card unificate** (immagine + meta + titolo overlay come singolo blocco), pensato sia per la home page (con selezione categoria) sia per la sezione "related" nella single (con scelta tra stessi tag / stesse categorie). Stessa intestazione `.lm-section-header` del featured.
 
 **Layout della card:**
-- Barra meta in alto: categoria (badge nero su sfondo bianco) a sinistra, data a destra. Bordo orizzontale superiore come separatore con la card adiacente (no gap tra card).
-- Immagine sotto la barra meta.
-- Titolo overlay con sfondo bianco e bordo, posizionato a `bottom: -1.25rem` in modo da sporgere leggermente sotto l'immagine.
+- Barra meta in alto: categoria (badge con background `$color-contrast` e testo bianco) a sinistra, data a destra. Bordo orizzontale superiore come separatore.
+- Immagine sotto la barra meta, con `margin-top: 3rem` per separare visivamente dalla meta-bar.
+- Titolo overlay con sfondo bianco (`$fs-title-small`), `position: absolute` con `left/right/bottom: 0.5rem` e `padding: 0.5rem`, sovrapposto alla parte inferiore dell'immagine.
 
 **Due varianti grafiche (attributo `variant`):**
 
-| Variante | Card | Immagine | Note |
-|---|---|---|---|
-| `arch` (default) | 445×480 | 445×435 con `border-radius: 50% 50% 0 0` (arco) | Variante home page principale |
-| `square` | 445×470 | 445×420 senza arrotondamenti | Variante quadrata |
+| Variante | Card | Immagine | Gap fra card | Note |
+|---|---|---|---|---|
+| `arch` (default) | 445×480 | 445×435 con `border-radius: 50% 50% 0 0` (arco) | 10px | Variante home page principale |
+| `square` | 445×470 | 445×420 senza arrotondamenti | 10px | Variante quadrata |
 
 **Attributi blocco:**
 
@@ -271,7 +272,7 @@ Nelle modalità related il post corrente viene escluso (`post__not_in`).
 
 ### 3. Post Grid (`livemuseum/post-grid`)
 
-Griglia di post con **infinite scroll**. Card identica al box quadrato del [Carousel Flat](#2-carousel-flat-livemuseumcarousel-flat) (445×470, immagine 420 senza arrotondamento, titolo overlay con sfondo bianco). Layout responsive via CSS grid `auto-fill` con gap 10px.
+Griglia di post con **infinite scroll**. Card identica al box quadrato del [Carousel Flat](#2-carousel-flat-livemuseumcarousel-flat) (immagine con `aspect-ratio: 445/420` senza arrotondamento, titolo overlay con sfondo bianco). Layout responsive via **flex-wrap**: ogni card ha `flex: 0 1 var(--lm-pg-card-max-w)` (default 445px), tante per riga quante ne entrano, le altre vanno in capo. Su viewport più stretti della basis la flex-shrink riduce la card fino a riempire la riga (mobile = una per riga naturalmente).
 
 **Attributi blocco:**
 
