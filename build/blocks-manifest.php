@@ -193,5 +193,40 @@ return array(
 		'editorScript' => 'file:./index.js',
 		'viewScriptModule' => 'file:./view.js',
 		'style' => 'file:./style-index.css'
+	),
+	'section-header' => array(
+		'$schema' => 'https://schemas.wp.org/trunk/block.json',
+		'apiVersion' => 3,
+		'name' => 'livemuseum/section-header',
+		'version' => '1.0.0',
+		'title' => 'LiveMuseum — Section Header',
+		'category' => 'design',
+		'icon' => 'heading',
+		'description' => 'Header di sezione (bordo tratteggiato + titolo con quadratino accent + link opzionale). Stesso componente usato nei carousel.',
+		'textdomain' => 'livemuseum',
+		'supports' => array(
+			'html' => false,
+			'align' => array(
+				'full',
+				'wide'
+			)
+		),
+		'attributes' => array(
+			'heading' => array(
+				'type' => 'string',
+				'default' => 'Titolo sezione'
+			),
+			'linkLabel' => array(
+				'type' => 'string',
+				'default' => 'Scopri di più'
+			),
+			'linkUrl' => array(
+				'type' => 'string',
+				'default' => ''
+			)
+		),
+		'render' => 'file:./render.php',
+		'editorScript' => 'file:./index.js',
+		'style' => 'file:./style-index.css'
 	)
 );

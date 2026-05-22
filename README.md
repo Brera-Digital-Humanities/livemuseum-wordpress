@@ -26,6 +26,7 @@ livemuseum/
 │   ├── carousel-featured/       # Carousel home — slide centrale ingrandita 3D
 │   ├── carousel-flat/           # Carousel home/related — card unificate
 │   ├── post-grid/               # Griglia post con infinite scroll
+│   ├── section-header/          # Header di sezione standalone
 │   ├── shared/                  # Logica condivisa fra blocchi (carousel-nav)
 │   └── style/                   # Stile globale del child theme (SCSS)
 │       ├── style.scss           # Entry point — @use dei parziali
@@ -304,6 +305,20 @@ Griglia di post con **infinite scroll**. Card identica al box quadrato del [Caro
 |---|---|---|
 | `init` | `data-wp-init` | Applica visibilità iniziale + lazy-load + setup `IntersectionObserver` sulla sentinel |
 | `applyVisibility` | `data-wp-watch` (al cambio di `visibleCount`) | Aggiorna le classi `is-hidden`/`is-loading`, carica le nuove thumbnail, mostra il messaggio "fine risultati" quando esaurito |
+
+---
+
+### 4. Section Header (`livemuseum/section-header`)
+
+Blocco statico che renderizza il componente `.lm-section-header` (dashed top border + titolo con quadratino accent + link "scopri di più" opzionale) come blocco standalone, utile per intestare sezioni custom senza dover incorporare un carousel.
+
+Solo PHP, nessuna runtime JS. Se sia `heading` sia `linkUrl` sono vuoti, il blocco non emette markup.
+
+| Attributo | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `heading` | string | "Titolo sezione" | Testo a sinistra |
+| `linkLabel` | string | "Scopri di più" | Etichetta del link a destra |
+| `linkUrl` | string | "" | URL del link; vuoto = link nascosto |
 
 ---
 
