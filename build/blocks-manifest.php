@@ -58,5 +58,74 @@ return array(
 		'editorScript' => 'file:./index.js',
 		'viewScriptModule' => 'file:./view.js',
 		'style' => 'file:./style-index.css'
+	),
+	'carousel-flat' => array(
+		'$schema' => 'https://schemas.wp.org/trunk/block.json',
+		'apiVersion' => 3,
+		'name' => 'livemuseum/carousel-flat',
+		'version' => '1.0.0',
+		'title' => 'LiveMuseum — Carousel Flat',
+		'category' => 'widgets',
+		'icon' => 'screenoptions',
+		'description' => 'Carousel orizzontale con card unificate (immagine + testo). Sorgente post configurabile: tutti, categoria corrente, categorie selezionate, oppure modalità related (stessi tag/categorie).',
+		'textdomain' => 'livemuseum',
+		'supports' => array(
+			'html' => false,
+			'align' => array(
+				'full',
+				'wide'
+			)
+		),
+		'attributes' => array(
+			'heading' => array(
+				'type' => 'string',
+				'default' => 'News'
+			),
+			'linkLabel' => array(
+				'type' => 'string',
+				'default' => 'Scopri di più'
+			),
+			'linkUrl' => array(
+				'type' => 'string',
+				'default' => ''
+			),
+			'variant' => array(
+				'type' => 'string',
+				'default' => 'arch',
+				'enum' => array(
+					'arch',
+					'square'
+				)
+			),
+			'postSource' => array(
+				'type' => 'string',
+				'default' => 'all',
+				'enum' => array(
+					'all',
+					'current_category',
+					'fixed_categories',
+					'same_tags',
+					'same_categories',
+					'same_tags_or_categories'
+				)
+			),
+			'categoryIds' => array(
+				'type' => 'array',
+				'default' => array(
+					
+				),
+				'items' => array(
+					'type' => 'number'
+				)
+			),
+			'postCount' => array(
+				'type' => 'number',
+				'default' => 20
+			)
+		),
+		'render' => 'file:./render.php',
+		'editorScript' => 'file:./index.js',
+		'viewScriptModule' => 'file:./view.js',
+		'style' => 'file:./style-index.css'
 	)
 );

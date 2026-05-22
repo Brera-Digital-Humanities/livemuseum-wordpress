@@ -23,9 +23,9 @@ Nessun plugin obbligatorio: i blocchi del tema usano solo dati nativi di WordPre
 ```
 livemuseum/
 ├── src/
-│   ├── carousel-featured/       # Carousel home — slide centrale ingrandita
-│   ├── carousel-flat/           # Carousel home — layout piatto (TODO)
-│   ├── related-carousel/        # Carousel correlati nella single (TODO)
+│   ├── carousel-featured/       # Carousel home — slide centrale ingrandita 3D
+│   ├── carousel-flat/           # Carousel home/related — card unificate
+│   ├── shared/                  # Logica condivisa fra blocchi (carousel-nav)
 │   └── style/                   # Stile globale del child theme (SCSS)
 │       ├── style.scss           # Entry point — @use dei parziali
 │       ├── _variables.scss      # Alias delle CSS custom properties di TT5
@@ -96,6 +96,7 @@ npm run test:unit
 | Suite | File testato | Cosa copre |
 |---|---|---|
 | `src/carousel-featured/__tests__/logic.test.js` | `src/carousel-featured/logic.js` | `nextIndex`/`prevIndex` (wrap circolare), `slideOffset` (percorso più corto), `slideTransform` (offset/opacity/zIndex/pointer-events su centro, adiacente, oltre visibilità), `boxTransform`, `visibleIndices` |
+| `src/carousel-flat/__tests__/logic.test.js` | `src/carousel-flat/logic.js` | Re-export della navigazione circolare condivisa + `cardTransform` (offset preservato, opacity sempre 1) |
 
 `wp-scripts test-unit-js` rileva automaticamente i `*.test.js` sotto `src/` — nessuna configurazione.
 

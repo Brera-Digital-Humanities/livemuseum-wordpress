@@ -10,45 +10,17 @@ import * as __WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__ from "
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   boxTransform: () => (/* binding */ boxTransform),
-/* harmony export */   nextIndex: () => (/* binding */ nextIndex),
-/* harmony export */   prevIndex: () => (/* binding */ prevIndex),
-/* harmony export */   slideOffset: () => (/* binding */ slideOffset),
+/* harmony export */   nextIndex: () => (/* reexport safe */ _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__.nextIndex),
+/* harmony export */   prevIndex: () => (/* reexport safe */ _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__.prevIndex),
+/* harmony export */   slideOffset: () => (/* reexport safe */ _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__.slideOffset),
 /* harmony export */   slideTransform: () => (/* binding */ slideTransform),
-/* harmony export */   visibleIndices: () => (/* binding */ visibleIndices)
+/* harmony export */   visibleIndices: () => (/* reexport safe */ _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__.visibleIndices)
 /* harmony export */ });
-/**
- * Logica pura del carousel: niente DOM, niente import da @wordpress/interactivity.
- * Il CSS gestisce posizionamento (--lm-cf-offset * gap) e dimensioni (.is-current).
- */
+/* harmony import */ var _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../shared/carousel-nav */ "./src/shared/carousel-nav.js");
+// Logica pura del carousel "featured". Navigazione condivisa in ../shared.
+// CSS gestisce posizionamento (--lm-cf-offset * gap) e dimensioni (.is-current).
 
-function nextIndex(currentIndex, total) {
-  if (total <= 0) {
-    return 0;
-  }
-  return (currentIndex + 1) % total;
-}
-function prevIndex(currentIndex, total) {
-  if (total <= 0) {
-    return 0;
-  }
-  return (currentIndex - 1 + total) % total;
-}
 
-// Offset circolare: percorso più corto tra index e currentIndex.
-function slideOffset(index, currentIndex, total) {
-  if (total <= 0) {
-    return 0;
-  }
-  let diff = index - currentIndex;
-  const half = Math.floor(total / 2);
-  if (diff > half) {
-    diff -= total;
-  }
-  if (diff < -half) {
-    diff += total;
-  }
-  return diff;
-}
 
 // Rail immagini: visible=1 → totale 3 slide visibili (centro + 1 per lato).
 function slideTransform(offset, opts = {}) {
@@ -76,7 +48,51 @@ function boxTransform(offset) {
   };
 }
 
-// Indici nel range [-visible, +visible] — usato dal lazy-load.
+/***/ },
+
+/***/ "./src/shared/carousel-nav.js"
+/*!************************************!*\
+  !*** ./src/shared/carousel-nav.js ***!
+  \************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   nextIndex: () => (/* binding */ nextIndex),
+/* harmony export */   prevIndex: () => (/* binding */ prevIndex),
+/* harmony export */   slideOffset: () => (/* binding */ slideOffset),
+/* harmony export */   visibleIndices: () => (/* binding */ visibleIndices)
+/* harmony export */ });
+// Navigazione circolare condivisa tra i carousel.
+
+function nextIndex(currentIndex, total) {
+  if (total <= 0) {
+    return 0;
+  }
+  return (currentIndex + 1) % total;
+}
+function prevIndex(currentIndex, total) {
+  if (total <= 0) {
+    return 0;
+  }
+  return (currentIndex - 1 + total) % total;
+}
+
+// Percorso circolare più corto tra index e currentIndex.
+function slideOffset(index, currentIndex, total) {
+  if (total <= 0) {
+    return 0;
+  }
+  let diff = index - currentIndex;
+  const half = Math.floor(total / 2);
+  if (diff > half) {
+    diff -= total;
+  }
+  if (diff < -half) {
+    diff += total;
+  }
+  return diff;
+}
 function visibleIndices(currentIndex, total, visible = 1) {
   if (total <= 0) {
     return [];
