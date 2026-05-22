@@ -1,0 +1,10 @@
+// Entry point dello stile globale.
+// I parziali sono aliasati alle CSS custom properties di TT5: niente ridefinizione
+// di colori/font/spacing — la fonte di verità resta theme.json.
+
+@use 'variables' as *;
+@use 'typography';
+@use 'layout';
+@use 'main-navbar';
+@use 'blocks';
+@use 'section-header';

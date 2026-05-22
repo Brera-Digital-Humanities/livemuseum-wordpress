@@ -1,0 +1,209 @@
+@use '../style/variables' as *;
+@use '../style/section-header';
+
+// Carousel "featured": due rail (immagini + box) sincronizzati su currentIndex.
+// Ogni rail è un CSS grid 1×1 con tutte le slide nella stessa cella; JS scrive
+// solo `--lm-cf-offset` per slide, CSS calcola `translateX(offset * gap)`.
+
+.lm-carousel-featured {
+	--lm-cf-image-center-w: 900px;
+	--lm-cf-image-center-h: 600px;
+	--lm-cf-image-side-w: 450px;
+	--lm-cf-image-side-h: 450px;
+	--lm-cf-image-gap: 750px;        // (900/2 + 75 gap + 450/2)
+
+	--lm-cf-box-w: 425px;
+	--lm-cf-box-gap: 450px;          // (425 + 25 gap)
+
+	--lm-cf-row-gap: 50px;
+
+	// Mobile: una slide per volta a full-width. Gap = 100% (= 1 slide-width) per
+	// avere la slide adiacente esattamente off-screen senza usare 100vw (che
+	// includerebbe la scrollbar e creerebbe overflow orizzontale).
+	@media ( max-width: 768px ) {
+		--lm-cf-image-center-w: 100%;
+		--lm-cf-image-center-h: 66.67vw;
+		--lm-cf-image-side-w: 100%;
+		--lm-cf-image-side-h: 66.67vw;
+		--lm-cf-image-gap: 100%;
+
+		// Box con 1.5rem di margin dal bordo schermo. Il +3rem nel gap compensa
+		// la box-width ridotta: (100% box + 3rem) = larghezza viewport.
+		--lm-cf-box-w: calc( 100% - 3rem );
+		--lm-cf-box-gap: calc( 100% + 3rem );
+
+		--lm-cf-row-gap: 1.5rem;
+	}
+
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	color: $color-contrast;
+	font-family: $font-primary;
+
+	&__images {
+		display: grid;
+		grid-template-rows: var(--lm-cf-image-center-h); // fissa = altezza ingrandita: no salto in animazione
+		grid-template-columns: minmax( 0, 1fr );         // vincola la colonna: img naturali non fanno blowout
+		margin-top: 2rem;
+		touch-action: pan-y;
+	}
+
+	&__image-slide {
+		--lm-cf-offset: 0;
+
+		grid-row: 1;
+		grid-column: 1;
+		justify-self: center;
+		align-self: center;
+		position: relative;
+		width: var(--lm-cf-image-side-w);
+		height: var(--lm-cf-image-side-h);
+		transform: translateX( calc( var(--lm-cf-offset) * var(--lm-cf-image-gap) ) );
+		transition:
+			transform 0.55s cubic-bezier( 0.22, 0.61, 0.36, 1 ),
+			width 0.45s cubic-bezier( 0.22, 0.61, 0.36, 1 ),
+			height 0.45s cubic-bezier( 0.22, 0.61, 0.36, 1 ),
+			opacity 0.4s ease;
+		will-change: transform, width, height, opacity;
+
+		&.is-current {
+			width: var(--lm-cf-image-center-w);
+			height: var(--lm-cf-image-center-h);
+		}
+	}
+
+	&__image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		background-color: rgba( 0, 0, 0, 0.04 );
+		transition: opacity 0.5s ease;
+
+		&[data-src],
+		&.is-loading {
+			opacity: 0;
+		}
+	}
+
+	&__boxes {
+		display: grid;
+		grid-template-rows: auto;
+		grid-template-columns: minmax( 0, 1fr );
+		margin-top: var(--lm-cf-row-gap);
+	}
+
+	&__box-slide {
+		--lm-cf-offset: 0;
+
+		grid-row: 1;
+		grid-column: 1;
+		justify-self: center;
+		align-self: start;
+		position: relative;
+		width: var(--lm-cf-box-w);
+		padding: 1rem 1.125rem;
+		border: 1px solid $color-contrast;
+		background: transparent;
+		box-sizing: border-box;
+		opacity: 0; // JS fa fade-in dopo aver posizionato al primo render
+		transform: translateX( calc( var(--lm-cf-offset) * var(--lm-cf-box-gap) ) );
+		transition:
+			transform 0.55s cubic-bezier( 0.22, 0.61, 0.36, 1 ),
+			opacity 0.4s ease;
+		will-change: transform, opacity;
+	}
+
+	// Bottone trasparente sovrapposto: pointer event affidabili anche con grid + transform.
+	&__hit {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		background: transparent;
+		border: 0;
+		padding: 0;
+		cursor: pointer;
+		z-index: 5;
+	}
+
+	&__title {
+		font-size: $fs-title;
+		line-height: 1.15;
+		font-weight: 500;
+		margin: 0 0 1rem;
+
+		a {
+			color: inherit;
+			text-decoration: none;
+
+			&:hover,
+			&:focus-visible {
+				text-decoration: underline;
+			}
+		}
+	}
+
+	&__excerpt {
+		font-size: $fs-body;
+		line-height: 1.35;
+		margin: 0 0 1rem;
+	}
+
+	&__tags {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+
+		li {
+			display: inline-flex;
+			align-items: center;
+			padding: 0.15rem 0.4rem;
+			font-size: $fs-label;
+			letter-spacing: 0.03em;
+			background: $color-contrast;
+			color: #fff;
+		}
+	}
+
+	&__nav {
+		display: flex;
+		justify-content: center;
+		gap: 3rem;
+		margin-top: var(--lm-cf-row-gap);
+		padding: 0 0 1.5rem;
+	}
+
+	&__arrow {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		background: transparent;
+		border: 0;
+		padding: 0;
+		cursor: pointer;
+		color: $color-contrast;
+		transition: opacity 0.2s ease;
+
+		&:hover,
+		&:focus-visible {
+			opacity: 0.6;
+		}
+	}
+
+	&__arrow--prev &__arrow-icon {
+		transform: scaleX( -1 );
+	}
+
+	&__arrow-icon {
+		width: 1.625rem;
+		height: 1.5625rem;
+		display: block;
+	}
+}
