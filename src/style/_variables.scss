@@ -1,14 +1,9 @@
-// Alias delle CSS custom properties esposte da Twenty Twenty-Five.
+// Alias delle CSS custom properties di TT5 — non ridefinire i valori, solo
+// referenziare i preset di theme.json con un fallback ragionevole.
 
-// Font family — Instrument Sans registrato nel Site Editor / theme.json
-$font-primary: var(--wp--preset--font-family--instrument-sans, sans-serif);
-
-// Colore "contrast" di TT5 usato per bordi/dashed e testo.
+$font-primary:   var(--wp--preset--font-family--instrument-sans, sans-serif);
 $color-contrast: var(--wp--preset--color--contrast, #221919);
 
-// Font-size: si appoggiano ai preset di theme.json così cambiare la scala
-// tipografica nel Site Editor si propaga ai blocchi senza ricompilare.
-// I fallback sono valori ragionevoli se il preset non esiste.
-$fs-label: var(--wp--preset--font-size--small,    0.875rem); // ~14px — etichetta sezione, tag, link "scopri di più"
-$fs-body:  var(--wp--preset--font-size--medium,   1rem);     // ~16px — excerpt
-$fs-title: var(--wp--preset--font-size--x-large,  1.5rem);   // ~24px — titolo card
+$fs-label: var(--wp--preset--font-size--small,    0.875rem); // ~14px
+$fs-body:  var(--wp--preset--font-size--medium,   1rem);     // ~16px
+$fs-title: var(--wp--preset--font-size--x-large,  1.5rem);   // ~24px

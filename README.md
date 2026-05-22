@@ -76,7 +76,7 @@ npm run start      # watch mode
 
 `webpack.config.js` estende la default di `@wordpress/scripts` aggiungendo l'entry globale `src/style/style.scss` → `build/style/style-style.css`. Con `--experimental-modules` la config di default è un array `[scripts, modules]`: l'entry SCSS viene aggiunta alla "scripts".
 
-> Dopo `git clone` eseguire `npm install && npm run build` prima di attivare il tema: senza il `build/` `register_block_type()` non trova i blocchi compilati.
+> La cartella `build/` è **versionata** nel repository (commit ad ogni rebuild rilevante). Questo permette di installare il tema direttamente da `git clone` senza dover eseguire `npm install && npm run build` sul server di destinazione. In sviluppo: ricordarsi di committare `build/` insieme alle sorgenti dopo modifiche significative.
 
 ---
 
@@ -189,7 +189,8 @@ Carousel con due rail orizzontali sincronizzati su `currentIndex` e wrap circola
 | `heading` | string | "Mostre ed eventi" | Titolo in alto a sx |
 | `linkLabel` | string | "Scopri di più" | Etichetta link in alto a dx |
 | `linkUrl` | string | "" | URL del link (vuoto = link nascosto) |
-| `categoryIds` | int[] | `[]` | Categorie WP filtro (vuoto = tutti i post) |
+| `postSource` | `all` \| `current_category` \| `fixed_categories` | `all` | Sorgente post. `current_category` usa il termine queried (template archivio categoria); fuori da quel contesto degrada a "tutti i post". `fixed_categories` filtra su `categoryIds` |
+| `categoryIds` | int[] | `[]` | Categorie WP (usato solo se `postSource = fixed_categories`) |
 | `postCount` | number | 20 | Numero massimo di slide |
 
 **Interactivity API — store `livemuseum/carousel-featured`:**

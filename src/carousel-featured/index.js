@@ -6,6 +6,7 @@ import {
 	PanelBody,
 	TextControl,
 	RangeControl,
+	SelectControl,
 	FormTokenField,
 	Placeholder,
 	Spinner,
@@ -18,7 +19,8 @@ import metadata from './block.json';
 import './style.scss';
 
 function Edit( { attributes, setAttributes } ) {
-	const { heading, linkLabel, linkUrl, categoryIds, postCount } = attributes;
+	const { heading, linkLabel, linkUrl, postSource, categoryIds, postCount } = attributes;
+	const source = postSource || 'all';
 
 	const categories = useSelect(
 		( select ) =>
@@ -64,26 +66,47 @@ function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 				<PanelBody title={ __( 'Sorgente post', 'livemuseum' ) } initialOpen={ true }>
-					{ isLoading ? (
-						<Spinner />
-					) : (
-						<FormTokenField
-							label={ __( 'Categorie selezionate', 'livemuseum' ) }
-							value={ selectedNames }
-							suggestions={ categoryNames }
-							onChange={ ( names ) => {
-								const ids = names
-									.map( ( n ) => nameToId[ n ] )
-									.filter( ( id ) => typeof id === 'number' );
-								setAttributes( { categoryIds: ids } );
-							} }
-							__experimentalExpandOnFocus={ true }
-							help={ __(
-								'Nessuna categoria selezionata = tutti i post.',
-								'livemuseum'
-							) }
-						/>
-					) }
+					<SelectControl
+						label={ __( 'Sorgente', 'livemuseum' ) }
+						value={ source }
+						options={ [
+							{ label: __( 'Tutti i post', 'livemuseum' ), value: 'all' },
+							{
+								label: __( 'Categoria corrente (template archivio)', 'livemuseum' ),
+								value: 'current_category',
+							},
+							{
+								label: __( 'Categorie selezionate', 'livemuseum' ),
+								value: 'fixed_categories',
+							},
+						] }
+						onChange={ ( v ) => setAttributes( { postSource: v } ) }
+						help={
+							source === 'current_category'
+								? __(
+										'Mostra solo i post della categoria visualizzata. Fuori dal template archivio: nessun filtro.',
+										'livemuseum'
+								  )
+								: undefined
+						}
+					/>
+					{ source === 'fixed_categories' &&
+						( isLoading ? (
+							<Spinner />
+						) : (
+							<FormTokenField
+								label={ __( 'Categorie', 'livemuseum' ) }
+								value={ selectedNames }
+								suggestions={ categoryNames }
+								onChange={ ( names ) => {
+									const ids = names
+										.map( ( n ) => nameToId[ n ] )
+										.filter( ( id ) => typeof id === 'number' );
+									setAttributes( { categoryIds: ids } );
+								} }
+								__experimentalExpandOnFocus={ true }
+							/>
+						) ) }
 					<RangeControl
 						label={ __( 'Numero post', 'livemuseum' ) }
 						value={ postCount ?? 20 }

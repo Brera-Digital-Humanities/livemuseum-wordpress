@@ -25,6 +25,11 @@
 			"type": "string",
 			"default": ""
 		},
+		"postSource": {
+			"type": "string",
+			"default": "all",
+			"enum": [ "all", "current_category", "fixed_categories" ]
+		},
 		"categoryIds": {
 			"type": "array",
 			"default": [],
