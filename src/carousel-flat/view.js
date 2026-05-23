@@ -1,18 +1,12 @@
 /**
- * Runtime Interactivity API del carousel "flat".
- * Calcoli puri in ./logic; qui DOM, eventi e store.
+ * Runtime Interactivity API del carousel "flat": track standard, scorrimento
+ * di un articolo alla volta, niente wrap. Calcoli puri in ./logic.
  */
 import { store, getContext, getElement } from '@wordpress/interactivity';
-import {
-	nextIndex,
-	prevIndex,
-	slideOffset,
-	cardTransform,
-} from './logic';
+import { visibleCount, clampIndex } from './logic';
 
 const STORE_NAMESPACE = 'livemuseum/carousel-flat';
 
-// Touch coords per istanza, fuori dal ctx reattivo.
 const instanceState = new WeakMap();
 
 function getInstanceState( ctx ) {
@@ -24,52 +18,33 @@ function getInstanceState( ctx ) {
 	return s;
 }
 
-// Ctx già inizializzati: primo applyTransforms snap-only per evitare fan-out.
-const initialized = new WeakSet();
-
-function applyCards( cards, total, currentIndex, snapAll ) {
-	cards.forEach( ( card, index ) => {
-		const offset = slideOffset( index, currentIndex, total );
-		const result = cardTransform( offset );
-
-		const prevOffset = card.dataset.lmOffset !== undefined
-			? parseInt( card.dataset.lmOffset, 10 )
-			: offset;
-		const isWrapping = Math.abs( offset - prevOffset ) > 1;
-		const snap = snapAll || isWrapping;
-
-		if ( snap ) {
-			card.style.transition = 'none';
-		}
-
-		card.style.setProperty( '--lm-cfl-offset', String( result.offset ) );
-		card.style.zIndex = String( result.zIndex );
-		card.style.pointerEvents = result.pointerEvents;
-		card.dataset.lmOffset = String( offset );
-
-		if ( snap ) {
-			void card.offsetHeight;
-			card.style.transition = '';
-		}
-
-		card.style.opacity = String( result.opacity );
-	} );
+// Numero di card visibili, misurato dal DOM (card width + gap vs viewport).
+function measureVisible( ref ) {
+	const track = ref.querySelector( '.lm-carousel-flat__track' );
+	const card = track && track.querySelector( '.lm-carousel-flat__card' );
+	if ( ! track || ! card ) {
+		return 1;
+	}
+	const gap = parseFloat( getComputedStyle( track ).columnGap ) || 0;
+	const step = card.offsetWidth + gap;
+	return visibleCount( ref.clientWidth, step );
 }
 
-function applyVisuals( ref, ctx ) {
-	const cards = ref.querySelectorAll( '.lm-carousel-flat__card' );
-	const firstRun = ! initialized.has( ctx );
-	initialized.add( ctx );
-	applyCards( cards, ctx.total, ctx.currentIndex, firstRun );
+function applyPosition( ref, ctx ) {
+	const track = ref.querySelector( '.lm-carousel-flat__track' );
+	if ( track ) {
+		track.style.setProperty( '--lm-cfl-current', String( ctx.currentIndex ) );
+	}
 
-	// Lazy-load delle thumbnail nelle card vicine (range ±2).
-	const total = ctx.total;
-	cards.forEach( ( card, index ) => {
-		const offset = slideOffset( index, ctx.currentIndex, total );
-		if ( Math.abs( offset ) > 2 ) {
+	// Lazy-load: carica le card fino a currentIndex + finestra visibile + buffer.
+	const visible = measureVisible( ref );
+	const limit = ctx.currentIndex + visible + 2;
+	const cards = ref.querySelectorAll( '.lm-carousel-flat__card' );
+	cards.forEach( ( cardEl, index ) => {
+		if ( index > limit ) {
 			return;
 		}
-		const img = card.querySelector( 'img[data-src]' );
+		const img = cardEl.querySelector( 'img[data-src]' );
 		if ( ! img ) {
 			return;
 		}
@@ -90,21 +65,26 @@ store( STORE_NAMESPACE, {
 	actions: {
 		next() {
 			const ctx = getContext();
-			ctx.currentIndex = nextIndex( ctx.currentIndex, ctx.total );
+			const { ref } = getElement();
+			const visible = measureVisible( ref );
+			ctx.currentIndex = clampIndex( ctx.currentIndex + 1, ctx.total, visible );
 		},
 		prev() {
 			const ctx = getContext();
-			ctx.currentIndex = prevIndex( ctx.currentIndex, ctx.total );
+			const { ref } = getElement();
+			const visible = measureVisible( ref );
+			ctx.currentIndex = clampIndex( ctx.currentIndex - 1, ctx.total, visible );
 		},
 		onKeyDown( event ) {
-			const ctx = getContext();
-			if ( event.key === 'ArrowRight' ) {
-				event.preventDefault();
-				ctx.currentIndex = nextIndex( ctx.currentIndex, ctx.total );
-			} else if ( event.key === 'ArrowLeft' ) {
-				event.preventDefault();
-				ctx.currentIndex = prevIndex( ctx.currentIndex, ctx.total );
+			if ( event.key !== 'ArrowRight' && event.key !== 'ArrowLeft' ) {
+				return;
 			}
+			event.preventDefault();
+			const ctx = getContext();
+			const { ref } = getElement();
+			const visible = measureVisible( ref );
+			const delta = event.key === 'ArrowRight' ? 1 : -1;
+			ctx.currentIndex = clampIndex( ctx.currentIndex + delta, ctx.total, visible );
 		},
 		onTouchStart( event ) {
 			const ctx = getContext();
@@ -115,6 +95,7 @@ store( STORE_NAMESPACE, {
 		},
 		onTouchEnd( event ) {
 			const ctx = getContext();
+			const { ref } = getElement();
 			const s = getInstanceState( ctx );
 			if ( s.touchStartX === null ) {
 				return;
@@ -124,16 +105,12 @@ store( STORE_NAMESPACE, {
 			const dy = t.clientY - s.touchStartY;
 			s.touchStartX = null;
 			s.touchStartY = null;
-			if ( Math.abs( dy ) > Math.abs( dx ) ) {
+			if ( Math.abs( dy ) > Math.abs( dx ) || Math.abs( dx ) < 50 ) {
 				return;
 			}
-			if ( Math.abs( dx ) < 50 ) {
-				return;
-			}
-			ctx.currentIndex =
-				dx < 0
-					? nextIndex( ctx.currentIndex, ctx.total )
-					: prevIndex( ctx.currentIndex, ctx.total );
+			const visible = measureVisible( ref );
+			const delta = dx < 0 ? 1 : -1;
+			ctx.currentIndex = clampIndex( ctx.currentIndex + delta, ctx.total, visible );
 		},
 	},
 	callbacks: {
@@ -143,7 +120,7 @@ store( STORE_NAMESPACE, {
 			if ( ! ref ) {
 				return;
 			}
-			applyVisuals( ref, ctx );
+			applyPosition( ref, ctx );
 		},
 	},
 } );

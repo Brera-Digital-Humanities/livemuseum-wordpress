@@ -140,7 +140,8 @@
 
 			&:hover,
 			&:focus-visible {
-				text-decoration: underline;
+				text-decoration: none;
+				color: var( --wp--preset--color--accent-1 );
 			}
 		}
 	}
@@ -159,7 +160,7 @@
 		flex-wrap: wrap;
 		gap: 0.25rem;
 
-		li {
+		a {
 			display: inline-flex;
 			align-items: center;
 			padding: 0.15rem 0.4rem;
@@ -167,6 +168,15 @@
 			letter-spacing: 0.03em;
 			background: $color-contrast;
 			color: #fff;
+			border: 1px solid $color-contrast;
+			text-decoration: none;
+			transition: background-color 0.2s ease, color 0.2s ease;
+
+			&:hover,
+			&:focus-visible {
+				background-color: var( --wp--preset--color--base, #fff );
+				color: $color-contrast;
+			}
 		}
 	}
 

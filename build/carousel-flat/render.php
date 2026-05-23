@@ -96,6 +96,19 @@ switch ( $post_source ) {
 		break;
 }
 
+// Categorie da mostrare nel badge:
+//  - filtro per categoria (current/fixed) → solo quelle del filtro;
+//  - all / related → tutte le categorie del post.
+$highlight_cat_ids = null; // null = tutte
+if ( 'current_category' === $post_source ) {
+	$queried = get_queried_object();
+	if ( $queried instanceof WP_Term && 'category' === $queried->taxonomy ) {
+		$highlight_cat_ids = array( (int) $queried->term_id );
+	}
+} elseif ( 'fixed_categories' === $post_source && ! empty( $category_ids ) ) {
+	$highlight_cat_ids = $category_ids;
+}
+
 $query = new WP_Query( $query_args );
 if ( ! $query->have_posts() ) {
 	return '';
@@ -104,17 +117,26 @@ if ( ! $query->have_posts() ) {
 $cards = array();
 while ( $query->have_posts() ) {
 	$query->the_post();
-	$post_id    = get_the_ID();
-	$image_url  = has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'large' ) : '';
-	$categories = get_the_category( $post_id );
-	$cat_name   = ! empty( $categories ) ? $categories[0]->name : '';
+	$post_id   = get_the_ID();
+	$image_url = has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'large' ) : '';
+
+	$display_cats = array();
+	foreach ( get_the_category( $post_id ) as $cat ) {
+		if ( null === $highlight_cat_ids || in_array( $cat->term_id, $highlight_cat_ids, true ) ) {
+			$display_cats[] = array(
+				'name' => $cat->name,
+				'link' => get_category_link( $cat->term_id ),
+			);
+		}
+	}
+
 	$cards[] = array(
-		'id'        => $post_id,
-		'title'     => get_the_title( $post_id ),
-		'permalink' => get_permalink( $post_id ),
-		'image'     => $image_url,
-		'category'  => $cat_name,
-		'date'      => get_the_date( 'F j, Y', $post_id ),
+		'id'         => $post_id,
+		'title'      => get_the_title( $post_id ),
+		'permalink'  => get_permalink( $post_id ),
+		'image'      => $image_url,
+		'categories' => $display_cats,
+		'date'       => get_the_date( 'F j, Y', $post_id ),
 	);
 }
 wp_reset_postdata();
@@ -153,16 +175,16 @@ $arrow_svg = '<svg class="lm-carousel-flat__arrow-icon" width="26" height="25" v
 	<div class="lm-carousel-flat__track">
 		<?php foreach ( $cards as $index => $card ) : ?>
 			<article class="lm-carousel-flat__card" data-index="<?php echo (int) $index; ?>">
-				<a class="lm-carousel-flat__link" href="<?php echo esc_url( $card['permalink'] ); ?>">
-					<div class="lm-carousel-flat__meta">
-						<?php if ( '' !== $card['category'] ) : ?>
-							<span class="lm-carousel-flat__category"><?php echo esc_html( $card['category'] ); ?></span>
-						<?php else : ?>
-							<span></span>
-						<?php endif; ?>
+				<div class="lm-carousel-flat__meta">
+						<div class="lm-carousel-flat__categories">
+							<?php foreach ( $card['categories'] as $cat ) : ?>
+								<a class="lm-carousel-flat__category" href="<?php echo esc_url( $cat['link'] ); ?>"><?php echo esc_html( $cat['name'] ); ?></a>
+							<?php endforeach; ?>
+						</div>
 						<time class="lm-carousel-flat__date"><?php echo esc_html( $card['date'] ); ?></time>
 					</div>
-					<div class="lm-carousel-flat__media">
+					<a class="lm-carousel-flat__link" href="<?php echo esc_url( $card['permalink'] ); ?>">
+						<div class="lm-carousel-flat__media">
 						<?php if ( '' !== $card['image'] ) : ?>
 							<img
 								class="lm-carousel-flat__image"

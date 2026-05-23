@@ -5,6 +5,30 @@ button:focus, a:focus {
   outline: none;
 }
 
+.wp-block-tag-cloud a,
+.wp-block-post-terms.taxonomy-post_tag a,
+.wp-block-post-terms a.wp-block-post-terms-tag {
+  display: inline-block;
+  padding: 12px 15px;
+  border: 1px solid var(--wp--preset--color--contrast, #221919);
+  border-radius: 50px;
+  font-size: var(--wp--preset--font-size--medium, 1rem);
+  color: var(--wp--preset--color--contrast, #221919);
+  line-height: 1rem;
+  background-color: var(--wp--preset--color--base, #fff);
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.wp-block-tag-cloud a:hover, .wp-block-tag-cloud a:focus-visible,
+.wp-block-post-terms.taxonomy-post_tag a:hover,
+.wp-block-post-terms.taxonomy-post_tag a:focus-visible,
+.wp-block-post-terms a.wp-block-post-terms-tag:hover,
+.wp-block-post-terms a.wp-block-post-terms-tag:focus-visible {
+  background-color: var(--wp--preset--color--contrast, #221919);
+  color: #fff;
+}
+
 .lm-section-header {
   display: flex;
   align-items: center;

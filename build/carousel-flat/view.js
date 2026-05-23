@@ -9,26 +9,45 @@ import * as __WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__ from "
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   cardTransform: () => (/* binding */ cardTransform),
+/* harmony export */   clampIndex: () => (/* binding */ clampIndex),
 /* harmony export */   nextIndex: () => (/* reexport safe */ _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__.nextIndex),
 /* harmony export */   prevIndex: () => (/* reexport safe */ _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__.prevIndex),
-/* harmony export */   slideOffset: () => (/* reexport safe */ _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__.slideOffset)
+/* harmony export */   trackOffset: () => (/* binding */ trackOffset),
+/* harmony export */   visibleCount: () => (/* binding */ visibleCount)
 /* harmony export */ });
 /* harmony import */ var _shared_carousel_nav__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../shared/carousel-nav */ "./src/shared/carousel-nav.js");
-// Logica pura del carousel "flat". Navigazione condivisa in ../shared.
+// Logica pura del carousel "flat": track left-anchored infinito.
+// nextIndex/prevIndex (circolari) sono condivisi con il featured.
 
 
 
-// Card: distribuzione lineare via offset. Overflow:hidden della section
-// taglia quelle fuori viewport, niente cutoff esplicito qui.
-function cardTransform(offset) {
-  const distance = Math.abs(offset);
-  return {
-    offset,
-    opacity: 1,
-    zIndex: Math.max(1, 100 - distance),
-    pointerEvents: 'auto'
-  };
+// Quante card entrano nel viewport dato il passo (card + gap) in px.
+function visibleCount(viewportWidth, cardStep) {
+  if (cardStep <= 0 || viewportWidth <= 0) {
+    return 1;
+  }
+  return Math.max(1, Math.floor(viewportWidth / cardStep));
+}
+
+// Indice vincolato a [0, total - visible]: usato quando le card entrano tutte
+// (niente scroll infinito, niente wrap).
+function clampIndex(index, total, visible) {
+  const max = Math.max(0, total - visible);
+  return Math.min(Math.max(index, 0), max);
+}
+
+// Offset di display left-anchored: offset 0 = card al bordo sinistro.
+// Con wrap, la posizione più lontana (total-1) diventa -1 → la card finisce
+// nel buffer off-screen a sinistra, pronta a riciclarsi senza salto visibile.
+function trackOffset(index, currentIndex, total, wrap) {
+  if (total <= 0) {
+    return 0;
+  }
+  let offset = ((index - currentIndex) % total + total) % total; // 0..total-1
+  if (wrap && offset === total - 1) {
+    offset = -1;
+  }
+  return offset;
 }
 
 /***/ },
@@ -173,14 +192,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/interactivity */ "@wordpress/interactivity");
 /* harmony import */ var _logic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./logic */ "./src/carousel-flat/logic.js");
 /**
- * Runtime Interactivity API del carousel "flat".
- * Calcoli puri in ./logic; qui DOM, eventi e store.
+ * Runtime Interactivity API del carousel "flat": track standard, scorrimento
+ * di un articolo alla volta, niente wrap. Calcoli puri in ./logic.
  */
 
 
 const STORE_NAMESPACE = 'livemuseum/carousel-flat';
-
-// Touch coords per istanza, fuori dal ctx reattivo.
 const instanceState = new WeakMap();
 function getInstanceState(ctx) {
   let s = instanceState.get(ctx);
@@ -194,43 +211,32 @@ function getInstanceState(ctx) {
   return s;
 }
 
-// Ctx già inizializzati: primo applyTransforms snap-only per evitare fan-out.
-const initialized = new WeakSet();
-function applyCards(cards, total, currentIndex, snapAll) {
-  cards.forEach((card, index) => {
-    const offset = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.slideOffset)(index, currentIndex, total);
-    const result = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.cardTransform)(offset);
-    const prevOffset = card.dataset.lmOffset !== undefined ? parseInt(card.dataset.lmOffset, 10) : offset;
-    const isWrapping = Math.abs(offset - prevOffset) > 1;
-    const snap = snapAll || isWrapping;
-    if (snap) {
-      card.style.transition = 'none';
-    }
-    card.style.setProperty('--lm-cfl-offset', String(result.offset));
-    card.style.zIndex = String(result.zIndex);
-    card.style.pointerEvents = result.pointerEvents;
-    card.dataset.lmOffset = String(offset);
-    if (snap) {
-      void card.offsetHeight;
-      card.style.transition = '';
-    }
-    card.style.opacity = String(result.opacity);
-  });
+// Numero di card visibili, misurato dal DOM (card width + gap vs viewport).
+function measureVisible(ref) {
+  const track = ref.querySelector('.lm-carousel-flat__track');
+  const card = track && track.querySelector('.lm-carousel-flat__card');
+  if (!track || !card) {
+    return 1;
+  }
+  const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+  const step = card.offsetWidth + gap;
+  return (0,_logic__WEBPACK_IMPORTED_MODULE_1__.visibleCount)(ref.clientWidth, step);
 }
-function applyVisuals(ref, ctx) {
-  const cards = ref.querySelectorAll('.lm-carousel-flat__card');
-  const firstRun = !initialized.has(ctx);
-  initialized.add(ctx);
-  applyCards(cards, ctx.total, ctx.currentIndex, firstRun);
+function applyPosition(ref, ctx) {
+  const track = ref.querySelector('.lm-carousel-flat__track');
+  if (track) {
+    track.style.setProperty('--lm-cfl-current', String(ctx.currentIndex));
+  }
 
-  // Lazy-load delle thumbnail nelle card vicine (range ±2).
-  const total = ctx.total;
-  cards.forEach((card, index) => {
-    const offset = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.slideOffset)(index, ctx.currentIndex, total);
-    if (Math.abs(offset) > 2) {
+  // Lazy-load: carica le card fino a currentIndex + finestra visibile + buffer.
+  const visible = measureVisible(ref);
+  const limit = ctx.currentIndex + visible + 2;
+  const cards = ref.querySelectorAll('.lm-carousel-flat__card');
+  cards.forEach((cardEl, index) => {
+    if (index > limit) {
       return;
     }
-    const img = card.querySelector('img[data-src]');
+    const img = cardEl.querySelector('img[data-src]');
     if (!img) {
       return;
     }
@@ -250,21 +256,32 @@ function applyVisuals(ref, ctx) {
   actions: {
     next() {
       const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
-      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.nextIndex)(ctx.currentIndex, ctx.total);
+      const {
+        ref
+      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
+      const visible = measureVisible(ref);
+      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex + 1, ctx.total, visible);
     },
     prev() {
       const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
-      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.prevIndex)(ctx.currentIndex, ctx.total);
+      const {
+        ref
+      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
+      const visible = measureVisible(ref);
+      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex - 1, ctx.total, visible);
     },
     onKeyDown(event) {
-      const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
-      if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.nextIndex)(ctx.currentIndex, ctx.total);
-      } else if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.prevIndex)(ctx.currentIndex, ctx.total);
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') {
+        return;
       }
+      event.preventDefault();
+      const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
+      const {
+        ref
+      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
+      const visible = measureVisible(ref);
+      const delta = event.key === 'ArrowRight' ? 1 : -1;
+      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex + delta, ctx.total, visible);
     },
     onTouchStart(event) {
       const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
@@ -275,6 +292,9 @@ function applyVisuals(ref, ctx) {
     },
     onTouchEnd(event) {
       const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
+      const {
+        ref
+      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
       const s = getInstanceState(ctx);
       if (s.touchStartX === null) {
         return;
@@ -284,13 +304,12 @@ function applyVisuals(ref, ctx) {
       const dy = t.clientY - s.touchStartY;
       s.touchStartX = null;
       s.touchStartY = null;
-      if (Math.abs(dy) > Math.abs(dx)) {
+      if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 50) {
         return;
       }
-      if (Math.abs(dx) < 50) {
-        return;
-      }
-      ctx.currentIndex = dx < 0 ? (0,_logic__WEBPACK_IMPORTED_MODULE_1__.nextIndex)(ctx.currentIndex, ctx.total) : (0,_logic__WEBPACK_IMPORTED_MODULE_1__.prevIndex)(ctx.currentIndex, ctx.total);
+      const visible = measureVisible(ref);
+      const delta = dx < 0 ? 1 : -1;
+      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex + delta, ctx.total, visible);
     }
   },
   callbacks: {
@@ -302,7 +321,7 @@ function applyVisuals(ref, ctx) {
       if (!ref) {
         return;
       }
-      applyVisuals(ref, ctx);
+      applyPosition(ref, ctx);
     }
   }
 });

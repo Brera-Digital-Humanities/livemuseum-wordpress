@@ -1,1 +1,31 @@
-// Override per blocchi core e selettori globali fra blocchi.
+@use 'variables' as *;
+
+// Override per blocchi core: regole che il Site Editor non sa esprimere
+// (es. styling granulare dentro un blocco) o overrides cross-blocco.
+
+// -----------------------------------------------------------------------
+// Tag come pill con bordo. Copre i due blocchi WP più usati per i tag:
+//   - core/tag-cloud  → <a class="tag-cloud-link">
+//   - core/post-terms (con post_tag) → markup post-terms-tag
+//   Il selettore base la cattura entrambi.
+// -----------------------------------------------------------------------
+.wp-block-tag-cloud a,
+.wp-block-post-terms.taxonomy-post_tag a,
+.wp-block-post-terms a.wp-block-post-terms-tag {
+	display: inline-block;
+	padding: 12px 15px;
+	border: 1px solid $color-contrast;
+	border-radius: 50px;
+	font-size: $fs-body;
+	color: $color-contrast;
+    line-height: 1rem;
+	background-color: var(--wp--preset--color--base, #fff);
+	text-decoration: none;
+	transition: background-color 0.2s ease, color 0.2s ease;
+
+	&:hover,
+	&:focus-visible {
+		background-color: $color-contrast;
+		color: #fff;
+	}
+}

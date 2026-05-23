@@ -57,7 +57,7 @@ while ( $query->have_posts() ) {
 			static function ( $tag ) {
 				return array(
 					'name' => $tag->name,
-					'slug' => $tag->slug,
+					'link' => get_tag_link( $tag->term_id ),
 				);
 			},
 			$tags_raw
@@ -130,13 +130,6 @@ $arrow_svg = '<svg class="lm-carousel-featured__arrow-icon" width="26" height="2
 	<div class="lm-carousel-featured__boxes">
 		<?php foreach ( $slides as $index => $slide ) : ?>
 			<article class="lm-carousel-featured__box-slide" data-index="<?php echo (int) $index; ?>">
-				<button
-					type="button"
-					class="lm-carousel-featured__hit"
-					data-index="<?php echo (int) $index; ?>"
-					data-wp-on--click="actions.onSlideClick"
-					aria-label="<?php echo esc_attr( sprintf( __( 'Vai alla slide %d', 'livemuseum' ), $index + 1 ) ); ?>"
-				></button>
 				<h3 class="lm-carousel-featured__title">
 					<a href="<?php echo esc_url( $slide['permalink'] ); ?>">
 						<?php echo esc_html( $slide['title'] ); ?>
@@ -148,7 +141,7 @@ $arrow_svg = '<svg class="lm-carousel-featured__arrow-icon" width="26" height="2
 				<?php if ( ! empty( $slide['tags'] ) ) : ?>
 					<ul class="lm-carousel-featured__tags">
 						<?php foreach ( $slide['tags'] as $tag ) : ?>
-							<li><?php echo esc_html( $tag['name'] ); ?></li>
+							<li><a href="<?php echo esc_url( $tag['link'] ); ?>"><?php echo esc_html( $tag['name'] ); ?></a></li>
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>

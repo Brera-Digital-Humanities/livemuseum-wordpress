@@ -45,6 +45,8 @@
   --lm-cfl-card-w: 445px;
   --lm-cfl-card-gap: 10px;
   --lm-cfl-card-step: calc( var(--lm-cfl-card-w) + var(--lm-cfl-card-gap) );
+  --lm-cfl-current: 0;
+  --lm-cfl-track-pad: 0px;
   --lm-cfl-row-gap: 50px;
   --lm-cfl-card-h: 480px;
   --lm-cfl-image-h: 435px;
@@ -52,8 +54,8 @@
 }
 @media (max-width: 768px) {
   .lm-carousel-flat {
-    --lm-cfl-card-w: calc( 100% - 3rem );
-    --lm-cfl-card-step: calc( 100% + 3rem );
+    --lm-cfl-card-w: calc( 100vw - 3rem );
+    --lm-cfl-track-pad: 1.5rem;
     --lm-cfl-row-gap: 1.5rem;
   }
 }
@@ -65,35 +67,28 @@
   font-family: var(--wp--preset--font-family--instrument-sans, sans-serif);
 }
 .lm-carousel-flat--square {
-  --lm-cfl-card-gap: 10px;
   --lm-cfl-card-h: 470px;
   --lm-cfl-image-h: 420px;
   --lm-cfl-image-radius: 0;
 }
 .lm-carousel-flat__track {
-  display: grid;
-  grid-template-rows: var(--lm-cfl-card-h);
-  grid-template-columns: minmax(0, 1fr);
-  margin-top: 2rem;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--lm-cfl-card-gap);
+  padding-right: var(--lm-cfl-track-pad);
+  margin: 2rem 1.5rem 0;
   touch-action: pan-y;
+  transform: translateX(calc(-1*(var(--lm-cfl-current) * var(--lm-cfl-card-step) * -1)));
+  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
 }
 .lm-carousel-flat__card {
-  --lm-cfl-offset: 0;
-  grid-row: 1;
-  grid-column: 1;
-  justify-self: center;
-  width: var(--lm-cfl-card-w);
+  flex: 0 0 var(--lm-cfl-card-w);
   height: var(--lm-cfl-card-h);
-  opacity: 0;
-  transform: translateX(calc(-1*(var(--lm-cfl-offset) * var(--lm-cfl-card-step))));
-  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.4s ease;
-  will-change: transform, opacity;
 }
 .lm-carousel-flat__link {
   display: block;
-  position: relative;
-  width: 100%;
-  height: 100%;
+  margin-top: 3rem;
   color: inherit;
   text-decoration: none;
 }
@@ -105,14 +100,27 @@
   padding: 0.2rem 0;
   border-top: 1px solid var(--wp--preset--color--contrast, #221919);
 }
+.lm-carousel-flat__categories {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
 .lm-carousel-flat__category {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0;
+  padding: 0.15rem 0.5rem;
   font-size: var(--wp--preset--font-size--small, 0.875rem);
   letter-spacing: 0.03em;
   background: var(--wp--preset--color--contrast, #221919);
   color: #fff;
+  border: 1px solid var(--wp--preset--color--contrast, #221919);
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.lm-carousel-flat__category:hover, .lm-carousel-flat__category:focus-visible {
+  background-color: var(--wp--preset--color--base, #fff);
+  color: var(--wp--preset--color--contrast, #221919);
 }
 .lm-carousel-flat__date {
   font-size: var(--wp--preset--font-size--small, 0.875rem);
@@ -125,7 +133,6 @@
   overflow: hidden;
   border-radius: var(--lm-cfl-image-radius);
   background-color: rgba(0, 0, 0, 0.04);
-  margin-top: 3rem;
 }
 .lm-carousel-flat__image {
   display: block;

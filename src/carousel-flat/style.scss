@@ -2,17 +2,18 @@
 @use '../style/section-header';
 
 // Carousel "flat": card unificate (immagine + meta + titolo overlay) in
-// un singolo rail. Due varianti via modificatore: .lm-carousel-flat--arch
+// un track standard. Due varianti via modificatore: .lm-carousel-flat--arch
 // (immagine top-rounded a semi-arco) e .lm-carousel-flat--square.
 //
-// Architettura uguale al rail box di carousel-featured: CSS grid 1×1 con
-// tutte le card nella stessa cella; JS scrive --lm-cfl-offset e CSS calcola
-// translateX(offset * card-step).
+// Track flex left-aligned: la card 0 parte a sinistra, il track trasla di
+// --lm-cfl-current * card-step (un articolo per step, niente wrap).
 
 .lm-carousel-flat {
 	--lm-cfl-card-w: 445px;
-	--lm-cfl-card-gap: 10px; // arch ha gap 10px tra card (square lo riporta a 0)
+	--lm-cfl-card-gap: 10px;
 	--lm-cfl-card-step: calc( var(--lm-cfl-card-w) + var(--lm-cfl-card-gap) );
+	--lm-cfl-current: 0;
+	--lm-cfl-track-pad: 0px;
 
 	--lm-cfl-row-gap: 50px;
 
@@ -21,10 +22,10 @@
 	--lm-cfl-image-h: 435px;
 	--lm-cfl-image-radius: 50% 50% 0 0;
 
-	// Mobile: card full-width, gap così che l'adiacente sia off-screen.
+	// Mobile: una card a (quasi) tutto schermo (1.5rem dai bordi).
 	@media ( max-width: 768px ) {
-		--lm-cfl-card-w: calc( 100% - 3rem );
-		--lm-cfl-card-step: calc( 100% + 3rem );
+		--lm-cfl-card-w: calc( 100vw - 3rem );
+		--lm-cfl-track-pad: 1.5rem;
 		--lm-cfl-row-gap: 1.5rem;
 	}
 
@@ -35,41 +36,32 @@
 	font-family: $font-primary;
 
 	&--square {
-		--lm-cfl-card-gap: 10px;
 		--lm-cfl-card-h: 470px;
 		--lm-cfl-image-h: 420px;
 		--lm-cfl-image-radius: 0;
 	}
 
 	&__track {
-		display: grid;
-		grid-template-rows: var(--lm-cfl-card-h);
-		grid-template-columns: minmax( 0, 1fr );
-		margin-top: 2rem;
+		display: flex;
+		flex-wrap: nowrap;
+		gap: var(--lm-cfl-card-gap);
+		padding-left: var(--lm-cfl-track-pad);
+		margin: 2rem 1.5rem 0;
 		touch-action: pan-y;
+		transform: translateX( calc( var(--lm-cfl-current) * var(--lm-cfl-card-step) * -1 ) );
+		transition: transform 0.55s cubic-bezier( 0.22, 0.61, 0.36, 1 );
+		will-change: transform;
 	}
 
 	&__card {
-		--lm-cfl-offset: 0;
-
-		grid-row: 1;
-		grid-column: 1;
-		justify-self: center;
-		width: var(--lm-cfl-card-w);
+		flex: 0 0 var(--lm-cfl-card-w);
 		height: var(--lm-cfl-card-h);
-		opacity: 0; // fade-in dopo il primo posizionamento JS
-		transform: translateX( calc( var(--lm-cfl-offset) * var(--lm-cfl-card-step) ) );
-		transition:
-			transform 0.55s cubic-bezier( 0.22, 0.61, 0.36, 1 ),
-			opacity 0.4s ease;
-		will-change: transform, opacity;
 	}
 
+	// Il link avvolge solo l'immagine (area cliccabile = immagine).
 	&__link {
 		display: block;
-		position: relative;
-		width: 100%;
-		height: 100%;
+		margin-top: 3rem; // distanza dalla meta-bar
 		color: inherit;
 		text-decoration: none;
 	}
@@ -85,14 +77,30 @@
 		border-top: 1px solid $color-contrast;
 	}
 
+	&__categories {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
 	&__category {
 		display: inline-flex;
 		align-items: center;
-		padding: 0.15rem 0;
+		padding: 0.15rem 0.5rem;
 		font-size: $fs-label;
 		letter-spacing: 0.03em;
 		background: $color-contrast;
 		color: #fff;
+		border: 1px solid $color-contrast;
+		text-decoration: none;
+		transition: background-color 0.2s ease, color 0.2s ease;
+
+		&:hover,
+		&:focus-visible {
+			background-color: var( --wp--preset--color--base, #fff );
+			color: $color-contrast;
+		}
 	}
 
 	&__date {
@@ -107,7 +115,6 @@
 		overflow: hidden;
 		border-radius: var(--lm-cfl-image-radius);
 		background-color: rgba( 0, 0, 0, 0.04 );
-		margin-top: 3rem;
 	}
 
 	&__image {
