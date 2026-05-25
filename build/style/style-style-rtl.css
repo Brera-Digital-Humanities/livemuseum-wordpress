@@ -18,6 +18,7 @@ button:focus, a:focus {
   background-color: var(--wp--preset--color--base, #fff);
   text-decoration: none;
   transition: background-color 0.2s ease, color 0.2s ease;
+  margin-bottom: 10px;
 }
 
 .wp-block-tag-cloud a:hover, .wp-block-tag-cloud a:focus-visible,
