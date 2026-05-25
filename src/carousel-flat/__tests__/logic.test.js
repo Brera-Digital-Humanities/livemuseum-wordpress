@@ -1,4 +1,4 @@
-import { visibleCount, clampIndex } from '../logic';
+import { visibleCount, clampIndex, trackOffset } from '../logic';
 
 describe( 'carousel-flat/logic', () => {
 	describe( 'visibleCount', () => {
@@ -25,6 +25,27 @@ describe( 'carousel-flat/logic', () => {
 		} );
 		it( 'max 0 se le card entrano tutte', () => {
 			expect( clampIndex( 5, 3, 5 ) ).toBe( 0 );
+		} );
+	} );
+
+	describe( 'trackOffset', () => {
+		it( 'la card corrente è a offset 0 (bordo sinistro)', () => {
+			expect( trackOffset( 0, 0, 5, true ) ).toBe( 0 );
+			expect( trackOffset( 2, 2, 5, true ) ).toBe( 0 );
+		} );
+		it( 'le card successive scalano a destra', () => {
+			expect( trackOffset( 1, 0, 5, true ) ).toBe( 1 );
+			expect( trackOffset( 3, 0, 5, true ) ).toBe( 3 );
+		} );
+		it( 'con wrap, la posizione più lontana diventa -1 (buffer off-screen sx)', () => {
+			expect( trackOffset( 4, 0, 5, true ) ).toBe( -1 );
+			expect( trackOffset( 0, 1, 5, true ) ).toBe( -1 );
+		} );
+		it( 'senza wrap la posizione resta in [0, total-1]', () => {
+			expect( trackOffset( 4, 0, 5, false ) ).toBe( 4 );
+		} );
+		it( 'ritorna 0 con total 0', () => {
+			expect( trackOffset( 0, 0, 0, true ) ).toBe( 0 );
 		} );
 	} );
 } );

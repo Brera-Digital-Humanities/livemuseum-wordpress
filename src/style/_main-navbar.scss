@@ -1,1 +1,20 @@
+@use 'variables' as *;
+
 // Customizzazioni del menu/header principale.
+
+// Varianti di stile hover dei link di navigazione (registrate in functions.php).
+// La classe is-style-<name> è sul wrapper .wp-block-navigation-item.
+.wp-block-navigation-item.is-style-hover-underline a:hover,
+.wp-block-navigation-item.is-style-hover-underline a:focus-visible {
+	text-decoration: underline;
+}
+
+.wp-block-navigation-item.is-style-hover-accent a {
+	transition: color 0.2s ease;
+
+	&:hover,
+	&:focus-visible {
+		color: var( --wp--preset--color--accent-1 );
+        text-decoration: none;
+	}
+}

@@ -1,19 +1,19 @@
 @use '../style/variables' as *;
 @use '../style/section-header';
 
-// Carousel "flat": card unificate (immagine + meta + titolo overlay) in
-// un track standard. Due varianti via modificatore: .lm-carousel-flat--arch
-// (immagine top-rounded a semi-arco) e .lm-carousel-flat--square.
+// Carousel "flat": card unificate (immagine + meta + titolo overlay).
+// Due varianti via modificatore: .lm-carousel-flat--arch (immagine top-rounded)
+// e .lm-carousel-flat--square.
 //
-// Track flex left-aligned: la card 0 parte a sinistra, il track trasla di
-// --lm-cfl-current * card-step (un articolo per step, niente wrap).
+// Track infinito left-anchored: tutte le card in un grid 1×1 (stessa cella,
+// allineate a sinistra); JS scrive --lm-cfl-pos per card e CSS calcola
+// translateX(pos * card-step). pos -1 = buffer off-screen a sinistra dove le
+// card riciclano senza salto visibile.
 
 .lm-carousel-flat {
 	--lm-cfl-card-w: 445px;
 	--lm-cfl-card-gap: 10px;
 	--lm-cfl-card-step: calc( var(--lm-cfl-card-w) + var(--lm-cfl-card-gap) );
-	--lm-cfl-current: 0;
-	--lm-cfl-track-pad: 0px;
 
 	--lm-cfl-row-gap: 50px;
 
@@ -25,7 +25,6 @@
 	// Mobile: una card a (quasi) tutto schermo (1.5rem dai bordi).
 	@media ( max-width: 768px ) {
 		--lm-cfl-card-w: calc( 100vw - 3rem );
-		--lm-cfl-track-pad: 1.5rem;
 		--lm-cfl-row-gap: 1.5rem;
 	}
 
@@ -42,20 +41,31 @@
 	}
 
 	&__track {
-		display: flex;
-		flex-wrap: nowrap;
-		gap: var(--lm-cfl-card-gap);
-		padding-left: var(--lm-cfl-track-pad);
+		display: grid;
+		grid-template-rows: var(--lm-cfl-card-h);
+		grid-template-columns: minmax( 0, 1fr );
+		column-gap: var(--lm-cfl-card-gap); // inerte nel layout 1×1, letto da JS per il passo
 		margin: 2rem 1.5rem 0;
 		touch-action: pan-y;
-		transform: translateX( calc( var(--lm-cfl-current) * var(--lm-cfl-card-step) * -1 ) );
+	}
+
+	&__card {
+		--lm-cfl-pos: 0;
+
+		grid-row: 1;
+		grid-column: 1;
+		justify-self: start;
+		width: var(--lm-cfl-card-w);
+		height: var(--lm-cfl-card-h);
+		transform: translateX( calc( var(--lm-cfl-pos) * var(--lm-cfl-card-step) ) );
 		transition: transform 0.55s cubic-bezier( 0.22, 0.61, 0.36, 1 );
 		will-change: transform;
 	}
 
-	&__card {
-		flex: 0 0 var(--lm-cfl-card-w);
-		height: var(--lm-cfl-card-h);
+	@media ( max-width: 768px ) {
+		&__card {
+			justify-self: center;
+		}
 	}
 
 	// Il link avvolge solo l'immagine (area cliccabile = immagine).
@@ -122,12 +132,18 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transition: opacity 0.5s ease;
-		
+		transition: opacity 0.5s ease, transform 0.4s ease;
+
 		&[data-src],
 		&.is-loading {
 			opacity: 0;
 		}
+	}
+
+	// Zoom leggero dell'immagine all'hover del link (il media ha overflow:hidden).
+	&__link:hover &__image,
+	&__link:focus-visible &__image {
+		transform: scale( 1.05 );
 	}
 
 	// Titolo: overlay con sfondo bianco sull'immagine, in basso.

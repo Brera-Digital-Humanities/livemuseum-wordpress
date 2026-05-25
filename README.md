@@ -98,7 +98,7 @@ npm run test:unit
 | Suite | File testato | Cosa copre |
 |---|---|---|
 | `src/carousel-featured/__tests__/logic.test.js` | `src/carousel-featured/logic.js` | `nextIndex`/`prevIndex` (wrap circolare), `slideOffset` (percorso più corto), `slideTransform` (offset/opacity/zIndex/pointer-events su centro, adiacente, oltre visibilità), `boxTransform`, `visibleIndices` |
-| `src/carousel-flat/__tests__/logic.test.js` | `src/carousel-flat/logic.js` | `visibleCount` (card che entrano nel viewport) e `clampIndex` (indice vincolato a `[0, total - visibili]`, no wrap) |
+| `src/carousel-flat/__tests__/logic.test.js` | `src/carousel-flat/logic.js` | `visibleCount` (card che entrano), `clampIndex` (indice vincolato), `trackOffset` (offset left-anchored + buffer `-1` per il riciclo) |
 | `src/post-grid/__tests__/logic.test.js` | `src/post-grid/logic.js` | `isCardVisible` (index vs visibleCount), `nextCount` (incremento con saturazione al totale), `hasMore` |
 
 `wp-scripts test-unit-js` rileva automaticamente i `*.test.js` sotto `src/` — nessuna configurazione.
@@ -263,17 +263,17 @@ Carousel orizzontale con **card unificate** (immagine + meta + titolo overlay co
 
 Nelle modalità related il post corrente viene escluso (`post__not_in`).
 
-**Interattività:** carousel **standard a track**, non centrato: la prima card parte a sinistra (posizione 0) e si scorre un articolo alla volta con clamp ai bordi (niente wrap circolare). Frecce (in basso, ai lati con `justify-content: space-between`), tastiera `←`/`→`, swipe touch (soglia 50px, `touch-action: pan-y`). Lazy-load thumbnail nelle card fino a `currentIndex + visibili + 2`. Il link della card avvolge **solo l'immagine** (meta-bar fuori dall'area cliccabile).
+**Interattività:** carousel **infinito left-anchored**, non centrato: la prima card parte a sinistra (posizione 0) e si scorre un articolo alla volta. Quando ci sono più card di quante ne entrano, lo scorrimento è continuo (wrap circolare); se entrano tutte, niente scroll. Frecce (in basso, ai lati con `justify-content: space-between`), tastiera `←`/`→`, swipe touch (soglia 50px, `touch-action: pan-y`). Lazy-load thumbnail nelle card vicine al range visibile. Hover sull'immagine: zoom leggero (`scale(1.05)`, clippato da `overflow: hidden`). Il link della card avvolge **solo l'immagine** (meta-bar fuori dall'area cliccabile).
 
-**Mobile (≤ 768px):** una card per volta a `calc(100vw - 3rem)` con 1.5rem dai bordi (track con `padding-left`).
+**Mobile (≤ 768px):** una card per volta a `calc(100vw - 3rem)`, centrata (`justify-self: center`).
 
-**Architettura:** track flex left-aligned. JS scrive `--lm-cfl-current` (l'indice della card più a sinistra) sul `.lm-carousel-flat__track`, CSS calcola `translateX(current * card-step * -1)`. `logic.js` espone `visibleCount` (quante card entrano, da `card-width + gap` vs viewport) e `clampIndex` (limita a `[0, total - visibili]`); `view.js` misura il DOM per ricavare i visibili e applica il clamp su frecce/tastiera/swipe.
+**Architettura:** grid 1×1 (tutte le card nella stessa cella, `justify-self: start`). JS scrive `--lm-cfl-pos` per card, CSS calcola `translateX(pos * card-step)`. `logic.js` espone `visibleCount`, `clampIndex` e `trackOffset` (offset left-anchored: `pos 0` = bordo sinistro; con wrap la posizione più lontana diventa `-1` = buffer off-screen a sinistra dove la card ricicla). `view.js` applica `transition: none` (snap) al primo render e quando una card ricicla dall'altro lato: il riposizionamento avviene nel buffer fuori schermo, quindi **non è mai visibile**.
 
 ---
 
 ### 3. Post Grid (`livemuseum/post-grid`)
 
-Griglia di post con **infinite scroll**. Card identica al box quadrato del [Carousel Flat](#2-carousel-flat-livemuseumcarousel-flat): meta-bar con categorie linkate (stessa logica "quali categorie" del flat: filtro → solo quelle scelte, `all` → tutte), link solo sull'immagine, immagine con `aspect-ratio: 445/420`, titolo overlay con sfondo bianco. Layout responsive via **flex-wrap**: ogni card ha `flex: 0 1 var(--lm-pg-card-max-w)` (default 445px), tante per riga quante ne entrano, le altre vanno in capo. Su viewport più stretti della basis la flex-shrink riduce la card fino a riempire la riga (mobile = una per riga naturalmente).
+Griglia di post con **infinite scroll**. Card identica al box quadrato del [Carousel Flat](#2-carousel-flat-livemuseumcarousel-flat): meta-bar con categorie linkate (stessa logica "quali categorie" del flat: filtro → solo quelle scelte, `all` → tutte), link solo sull'immagine, immagine con `aspect-ratio: 445/420` e zoom leggero in hover (`scale(1.05)`), titolo overlay con sfondo bianco. Layout responsive via **flex-wrap**: ogni card ha `flex: 0 1 var(--lm-pg-card-max-w)` (default 445px), tante per riga quante ne entrano, le altre vanno in capo. Su viewport più stretti della basis la flex-shrink riduce la card fino a riempire la riga (mobile = una per riga naturalmente).
 
 **Attributi blocco:**
 

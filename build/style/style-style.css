@@ -5,6 +5,20 @@ button:focus, a:focus {
   outline: none;
 }
 
+.wp-block-navigation-item.is-style-hover-underline a:hover,
+.wp-block-navigation-item.is-style-hover-underline a:focus-visible {
+  text-decoration: underline;
+}
+
+.wp-block-navigation-item.is-style-hover-accent a {
+  transition: color 0.2s ease;
+}
+
+.wp-block-navigation-item.is-style-hover-accent a:hover, .wp-block-navigation-item.is-style-hover-accent a:focus-visible {
+  color: var(--wp--preset--color--accent-1);
+  text-decoration: none;
+}
+
 .wp-block-tag-cloud a,
 .wp-block-post-terms.taxonomy-post_tag a,
 .wp-block-post-terms a.wp-block-post-terms-tag {

@@ -86,3 +86,43 @@ add_filter(
 	},
 	999
 );
+
+// Abilita i controlli colore (testo + sfondo) sui singoli link di navigazione.
+add_filter(
+	'register_block_type_args',
+	static function ( $args, $name ) {
+		if ( 'core/navigation-link' === $name ) {
+			if ( ! isset( $args['supports'] ) || ! is_array( $args['supports'] ) ) {
+				$args['supports'] = array();
+			}
+			$args['supports']['color'] = array(
+				'text'       => true,
+				'background' => true,
+			);
+		}
+		return $args;
+	},
+	10,
+	2
+);
+
+// Varianti di stile hover selezionabili dall'editor sui link di navigazione.
+add_action(
+	'init',
+	static function () {
+		register_block_style(
+			'core/navigation-link',
+			array(
+				'name'  => 'hover-underline',
+				'label' => __( 'Sottolineato in hover', 'livemuseum' ),
+			)
+		);
+		register_block_style(
+			'core/navigation-link',
+			array(
+				'name'  => 'hover-accent',
+				'label' => __( 'Colore accent in hover', 'livemuseum' ),
+			)
+		);
+	}
+);

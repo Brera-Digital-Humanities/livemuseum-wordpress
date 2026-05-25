@@ -192,13 +192,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/interactivity */ "@wordpress/interactivity");
 /* harmony import */ var _logic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./logic */ "./src/carousel-flat/logic.js");
 /**
- * Runtime Interactivity API del carousel "flat": track standard, scorrimento
- * di un articolo alla volta, niente wrap. Calcoli puri in ./logic.
+ * Runtime Interactivity API del carousel "flat": track left-anchored infinito.
+ * Calcoli puri in ./logic. Il riciclo delle card avviene off-screen (snap senza
+ * transition) così il movimento di riposizionamento non è mai visibile.
  */
 
 
 const STORE_NAMESPACE = 'livemuseum/carousel-flat';
 const instanceState = new WeakMap();
+const initialized = new WeakSet();
 function getInstanceState(ctx) {
   let s = instanceState.get(ctx);
   if (!s) {
@@ -211,7 +213,7 @@ function getInstanceState(ctx) {
   return s;
 }
 
-// Numero di card visibili, misurato dal DOM (card width + gap vs viewport).
+// Card visibili, misurate dal DOM (card width + gap vs viewport).
 function measureVisible(ref) {
   const track = ref.querySelector('.lm-carousel-flat__track');
   const card = track && track.querySelector('.lm-carousel-flat__card');
@@ -220,68 +222,73 @@ function measureVisible(ref) {
   }
   const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
   const step = card.offsetWidth + gap;
-  return (0,_logic__WEBPACK_IMPORTED_MODULE_1__.visibleCount)(ref.clientWidth, step);
+  return (0,_logic__WEBPACK_IMPORTED_MODULE_1__.visibleCount)(track.clientWidth, step);
 }
-function applyPosition(ref, ctx) {
-  const track = ref.querySelector('.lm-carousel-flat__track');
-  if (track) {
-    track.style.setProperty('--lm-cfl-current', String(ctx.currentIndex));
-  }
 
-  // Lazy-load: carica le card fino a currentIndex + finestra visibile + buffer.
+// Avanza/indietreggia: infinito (wrap circolare) se ci sono più card di quante
+// ne entrano, altrimenti clamp (le card stanno tutte a video, niente scroll).
+function advance(ctx, ref, delta) {
   const visible = measureVisible(ref);
-  const limit = ctx.currentIndex + visible + 2;
+  if (ctx.total > visible) {
+    ctx.currentIndex = delta > 0 ? (0,_logic__WEBPACK_IMPORTED_MODULE_1__.nextIndex)(ctx.currentIndex, ctx.total) : (0,_logic__WEBPACK_IMPORTED_MODULE_1__.prevIndex)(ctx.currentIndex, ctx.total);
+  } else {
+    ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex + delta, ctx.total, visible);
+  }
+}
+function applyCards(ref, ctx, snapAll) {
+  const visible = measureVisible(ref);
+  const wrap = ctx.total > visible;
   const cards = ref.querySelectorAll('.lm-carousel-flat__card');
   cards.forEach((cardEl, index) => {
-    if (index > limit) {
-      return;
+    const offset = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.trackOffset)(index, ctx.currentIndex, ctx.total, wrap);
+
+    // Snap (transition: none) al primo render e quando una card ricicla
+    // dall'altro lato (offset cambiato di >1): il riposizionamento avviene
+    // nel buffer off-screen, quindi non è visibile.
+    const prev = cardEl.dataset.lmPos !== undefined ? parseInt(cardEl.dataset.lmPos, 10) : offset;
+    const snap = snapAll || Math.abs(offset - prev) > 1;
+    if (snap) {
+      cardEl.style.transition = 'none';
     }
-    const img = cardEl.querySelector('img[data-src]');
-    if (!img) {
-      return;
+    cardEl.style.setProperty('--lm-cfl-pos', String(offset));
+    cardEl.dataset.lmPos = String(offset);
+    if (snap) {
+      void cardEl.offsetHeight;
+      cardEl.style.transition = '';
     }
-    img.classList.add('is-loading');
-    const finish = () => {
-      img.classList.remove('is-loading');
-      img.removeAttribute('data-src');
-      img.removeEventListener('load', finish);
-      img.removeEventListener('error', finish);
-    };
-    img.addEventListener('load', finish);
-    img.addEventListener('error', finish);
-    img.src = img.dataset.src;
+
+    // Lazy-load nelle card vicine al range visibile (buffer incluso).
+    if (offset >= -1 && offset <= visible + 1) {
+      const img = cardEl.querySelector('img[data-src]');
+      if (img) {
+        img.classList.add('is-loading');
+        const finish = () => {
+          img.classList.remove('is-loading');
+          img.removeAttribute('data-src');
+          img.removeEventListener('load', finish);
+          img.removeEventListener('error', finish);
+        };
+        img.addEventListener('load', finish);
+        img.addEventListener('error', finish);
+        img.src = img.dataset.src;
+      }
+    }
   });
 }
 (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.store)(STORE_NAMESPACE, {
   actions: {
     next() {
-      const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
-      const {
-        ref
-      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
-      const visible = measureVisible(ref);
-      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex + 1, ctx.total, visible);
+      advance((0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)(), (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)().ref, 1);
     },
     prev() {
-      const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
-      const {
-        ref
-      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
-      const visible = measureVisible(ref);
-      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex - 1, ctx.total, visible);
+      advance((0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)(), (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)().ref, -1);
     },
     onKeyDown(event) {
       if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') {
         return;
       }
       event.preventDefault();
-      const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
-      const {
-        ref
-      } = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)();
-      const visible = measureVisible(ref);
-      const delta = event.key === 'ArrowRight' ? 1 : -1;
-      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex + delta, ctx.total, visible);
+      advance((0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)(), (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getElement)().ref, event.key === 'ArrowRight' ? 1 : -1);
     },
     onTouchStart(event) {
       const ctx = (0,_wordpress_interactivity__WEBPACK_IMPORTED_MODULE_0__.getContext)();
@@ -307,9 +314,7 @@ function applyPosition(ref, ctx) {
       if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 50) {
         return;
       }
-      const visible = measureVisible(ref);
-      const delta = dx < 0 ? 1 : -1;
-      ctx.currentIndex = (0,_logic__WEBPACK_IMPORTED_MODULE_1__.clampIndex)(ctx.currentIndex + delta, ctx.total, visible);
+      advance(ctx, ref, dx < 0 ? 1 : -1);
     }
   },
   callbacks: {
@@ -321,7 +326,9 @@ function applyPosition(ref, ctx) {
       if (!ref) {
         return;
       }
-      applyPosition(ref, ctx);
+      const firstRun = !initialized.has(ctx);
+      initialized.add(ctx);
+      applyCards(ref, ctx, firstRun);
     }
   }
 });

@@ -118,10 +118,13 @@
   height: 100%;
   -o-object-fit: cover;
      object-fit: cover;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.5s ease, transform 0.4s ease;
 }
 .lm-post-grid__image[data-src], .lm-post-grid__image.is-loading {
   opacity: 0;
+}
+.lm-post-grid__link:hover .lm-post-grid__image, .lm-post-grid__link:focus-visible .lm-post-grid__image {
+  transform: scale(1.05);
 }
 .lm-post-grid__title {
   position: absolute;
