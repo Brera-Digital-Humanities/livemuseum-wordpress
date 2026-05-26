@@ -98,13 +98,6 @@ store( STORE_NAMESPACE, {
 		prev() {
 			advance( getContext(), getElement().ref, -1 );
 		},
-		onKeyDown( event ) {
-			if ( event.key !== 'ArrowRight' && event.key !== 'ArrowLeft' ) {
-				return;
-			}
-			event.preventDefault();
-			advance( getContext(), getElement().ref, event.key === 'ArrowRight' ? 1 : -1 );
-		},
 		onTouchStart( event ) {
 			const ctx = getContext();
 			const s = getInstanceState( ctx );

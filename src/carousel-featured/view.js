@@ -130,28 +130,6 @@ store( STORE_NAMESPACE, {
 				link.click();
 			}
 		},
-		onKeyDown( event ) {
-			const ctx = getContext();
-			if ( event.key === 'ArrowRight' ) {
-				event.preventDefault();
-				ctx.currentIndex = nextIndex( ctx.currentIndex, ctx.total );
-			} else if ( event.key === 'ArrowLeft' ) {
-				event.preventDefault();
-				ctx.currentIndex = prevIndex( ctx.currentIndex, ctx.total );
-			}
-		},
-		onWheel( event ) {
-			// Naviga solo se il delta orizzontale domina (non rubare lo scroll verticale).
-			if ( Math.abs( event.deltaX ) <= Math.abs( event.deltaY ) ) {
-				return;
-			}
-			event.preventDefault();
-			const ctx = getContext();
-			ctx.currentIndex =
-				event.deltaX > 0
-					? nextIndex( ctx.currentIndex, ctx.total )
-					: prevIndex( ctx.currentIndex, ctx.total );
-		},
 		onTouchStart( event ) {
 			const ctx = getContext();
 			const s = getInstanceState( ctx );

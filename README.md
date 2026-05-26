@@ -183,7 +183,7 @@ Carousel con due rail orizzontali sincronizzati su `currentIndex` e wrap circola
 
 **Frecce in basso** distanziate 50px dalla riga box. Stesso SVG (`width: 26 height: 25`), `.--prev` ribaltata con `scaleX(-1)`.
 
-**Interazione:** frecce, tastiera `←`/`→`, swipe touch (soglia 50px, `touch-action: pan-y`), wheel orizzontale. Il bottone trasparente `__hit` è **solo sull'immagine** (non sul box dettagli): click su immagine laterale → la porta al centro; click su immagine centrale → apre il permalink. Nel box, solo il link del titolo è cliccabile.
+**Interazione:** frecce (bottoni prev/next), swipe touch (soglia 50px, `touch-action: pan-y`). Il bottone trasparente `__hit` è **solo sull'immagine** (non sul box dettagli): click su immagine laterale → la porta al centro; click su immagine centrale → apre il permalink. Nel box, solo il link del titolo è cliccabile.
 
 **Mobile (≤ 768px):** una slide per volta a full-width. Slider semplice — le custom properties vengono override-ate (`--lm-cf-image-gap: 100%`, `--lm-cf-box-w: calc(100% - 3rem)`, ecc.), tutta la logica JS/CSS resta identica.
 
@@ -206,8 +206,6 @@ Carousel con due rail orizzontali sincronizzati su `currentIndex` e wrap circola
 | context `total` | Numero totale di slide |
 | action `next` / `prev` | Avanza/indietreggia (wrap circolare) |
 | action `onSlideClick` | Click su slide: laterale → goTo; centrale → segue link titolo |
-| action `onKeyDown` | `←` / `→` |
-| action `onWheel` | Wheel orizzontale (solo se delta-x domina, non ruba lo scroll verticale) |
 | action `onTouchStart` / `onTouchEnd` | Swipe con soglia 50px |
 | callback `applyTransforms` | Scrive `--lm-cf-offset` su ogni slide, gestisce snap (primo render + wrap) e lazy-load immagini. Eseguito su `data-wp-init` e `data-wp-watch` |
 
@@ -263,7 +261,7 @@ Carousel orizzontale con **card unificate** (immagine + meta + titolo overlay co
 
 Nelle modalità related il post corrente viene escluso (`post__not_in`).
 
-**Interattività:** carousel **infinito left-anchored**, non centrato: la prima card parte a sinistra (posizione 0) e si scorre un articolo alla volta. Quando ci sono più card di quante ne entrano, lo scorrimento è continuo (wrap circolare); se entrano tutte, niente scroll. Frecce (in basso, ai lati con `justify-content: space-between`), tastiera `←`/`→`, swipe touch (soglia 50px, `touch-action: pan-y`). Lazy-load thumbnail nelle card vicine al range visibile. Hover sull'immagine: zoom leggero (`scale(1.05)`, clippato da `overflow: hidden`). Il link della card avvolge **solo l'immagine** (meta-bar fuori dall'area cliccabile).
+**Interattività:** carousel **infinito left-anchored**, non centrato: la prima card parte a sinistra (posizione 0) e si scorre un articolo alla volta. Quando ci sono più card di quante ne entrano, lo scorrimento è continuo (wrap circolare); se entrano tutte, niente scroll. Frecce (in basso, ai lati con `justify-content: space-between`), swipe touch (soglia 50px, `touch-action: pan-y`). Lazy-load thumbnail nelle card vicine al range visibile. Hover sull'immagine: zoom leggero (`scale(1.05)`, clippato da `overflow: hidden`). Il link della card avvolge **solo l'immagine** (meta-bar fuori dall'area cliccabile).
 
 **Mobile (≤ 768px):** una card per volta a `calc(100vw - 3rem)`, centrata (`justify-self: center`).
 
