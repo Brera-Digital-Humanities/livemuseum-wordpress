@@ -2,6 +2,11 @@
 
 // Customizzazioni del menu/header principale.
 
+// Link della pagina corrente: colore accent-1.
+.wp-block-navigation .wp-block-navigation-item__content[aria-current="page"] {
+	color: var( --wp--preset--color--accent-1 );
+}
+
 // Varianti di stile hover dei link di navigazione (registrate in functions.php).
 // La classe is-style-<name> è sul wrapper .wp-block-navigation-item.
 .wp-block-navigation-item.is-style-hover-underline a:hover,

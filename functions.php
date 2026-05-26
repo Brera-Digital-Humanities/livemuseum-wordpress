@@ -126,3 +126,44 @@ add_action(
 		);
 	}
 );
+
+// Marca il link della pagina corrente nel blocco Navigation con aria-current="page".
+// Il menu classico renderizzato dal blocco non lo aggiunge da solo; lo stile è in _main-navbar.scss.
+add_filter(
+	'render_block_core/navigation',
+	static function ( $content ) {
+		if ( is_admin() || '' === trim( (string) $content ) ) {
+			return $content;
+		}
+
+		// Path canonico della richiesta corrente (senza slash iniziale/finale).
+		if ( is_front_page() || is_home() ) {
+			$current = '';
+		} elseif ( is_singular() ) {
+			$current = (string) wp_parse_url( get_permalink(), PHP_URL_PATH );
+		} else {
+			$obj = get_queried_object();
+			$link = ( $obj instanceof WP_Term ) ? get_term_link( $obj ) : '';
+			$current = ( $link && ! is_wp_error( $link ) ) ? (string) wp_parse_url( $link, PHP_URL_PATH ) : null;
+		}
+		if ( null === $current ) {
+			return $content;
+		}
+		$current = trim( $current, '/' );
+
+		return preg_replace_callback(
+			'/<a\s[^>]*href="([^"]*)"[^>]*>/i',
+			static function ( $m ) use ( $current ) {
+				if ( false !== stripos( $m[0], 'aria-current' ) ) {
+					return $m[0];
+				}
+				$path = trim( (string) wp_parse_url( html_entity_decode( $m[1] ), PHP_URL_PATH ), '/' );
+				if ( $path !== $current ) {
+					return $m[0];
+				}
+				return preg_replace( '/^<a\s/i', '<a aria-current="page" ', $m[0] );
+			},
+			$content
+		);
+	}
+);
