@@ -146,6 +146,10 @@ return array(
 			)
 		),
 		'attributes' => array(
+			'showHeader' => array(
+				'type' => 'boolean',
+				'default' => false
+			),
 			'heading' => array(
 				'type' => 'string',
 				'default' => ''
@@ -165,6 +169,14 @@ return array(
 					'all',
 					'current_category',
 					'fixed_categories'
+				)
+			),
+			'paginationMode' => array(
+				'type' => 'string',
+				'default' => 'infinite',
+				'enum' => array(
+					'infinite',
+					'fixed'
 				)
 			),
 			'categoryIds' => array(
@@ -192,6 +204,45 @@ return array(
 		'render' => 'file:./render.php',
 		'editorScript' => 'file:./index.js',
 		'viewScriptModule' => 'file:./view.js',
+		'style' => 'file:./style-index.css'
+	),
+	'search-bar' => array(
+		'$schema' => 'https://schemas.wp.org/trunk/block.json',
+		'apiVersion' => 3,
+		'name' => 'livemuseum/search-bar',
+		'version' => '1.0.0',
+		'title' => 'LiveMuseum — Search Bar',
+		'category' => 'design',
+		'icon' => 'search',
+		'description' => 'Barra di ricerca segnaposto: campo bianco + bottone accent-2 attaccati e squadrati. Invia la chiave di ricerca a un URL provvisorio (app.livemuseum).',
+		'textdomain' => 'livemuseum',
+		'supports' => array(
+			'html' => false,
+			'align' => array(
+				'full',
+				'wide'
+			)
+		),
+		'attributes' => array(
+			'placeholder' => array(
+				'type' => 'string',
+				'default' => 'Cerca…'
+			),
+			'buttonLabel' => array(
+				'type' => 'string',
+				'default' => 'Cerca'
+			),
+			'actionUrl' => array(
+				'type' => 'string',
+				'default' => 'https://app.livemuseum/'
+			),
+			'paramName' => array(
+				'type' => 'string',
+				'default' => 'q'
+			)
+		),
+		'render' => 'file:./render.php',
+		'editorScript' => 'file:./index.js',
 		'style' => 'file:./style-index.css'
 	),
 	'section-header' => array(

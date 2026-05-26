@@ -1,0 +1,3 @@
+// Re-include il partial condiviso così l'editor preview ha gli stili.
+// In frontend gli stili arrivano già dal bundle globale (style/style-style.css).
+@use '../style/search-bar';

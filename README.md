@@ -271,25 +271,33 @@ Nelle modalità related il post corrente viene escluso (`post__not_in`).
 
 ### 3. Post Grid (`livemuseum/post-grid`)
 
-Griglia di post con **infinite scroll**. Card identica al box quadrato del [Carousel Flat](#2-carousel-flat-livemuseumcarousel-flat): meta-bar con categorie linkate (stessa logica "quali categorie" del flat: filtro → solo quelle scelte, `all` → tutte), link solo sull'immagine, immagine con `aspect-ratio: 445/420` e zoom leggero in hover (`scale(1.05)`), titolo overlay con sfondo bianco. Layout responsive via **flex-wrap**: ogni card ha `flex: 0 1 var(--lm-pg-card-max-w)` (default 445px), tante per riga quante ne entrano, le altre vanno in capo. Su viewport più stretti della basis la flex-shrink riduce la card fino a riempire la riga (mobile = una per riga naturalmente).
+Griglia di post con **infinite scroll** o **numero fisso** di post. Card identica al box quadrato del [Carousel Flat](#2-carousel-flat-livemuseumcarousel-flat): meta-bar con categorie linkate (stessa logica "quali categorie" del flat: filtro → solo quelle scelte, `all` → tutte), link solo sull'immagine, immagine con `aspect-ratio: 445/420` e zoom leggero in hover (`scale(1.05)`), titolo overlay con sfondo bianco. Layout responsive via **flex-wrap**: ogni card occupa il **25% della larghezza scontando il gap** (`flex-basis: calc((100% - 3 * gap) / 4)` → 4 per riga). Il numero di colonne è la custom property `--lm-pg-columns`, ridotta a 3 (≤1024px), 2 (≤768px) e 1 (≤480px) via media query, così la card scala di conseguenza.
+
+**Testata opzionale.** Header `.lm-section-header` come nei caroselli, **disattivato di default** (`showHeader: false`). Va abilitato dal toggle "Mostra testata"; con il toggle attivo si compilano titolo/link (la testata resta comunque omessa se sia `heading` sia `linkUrl` sono vuoti).
 
 **Attributi blocco:**
 
 | Attributo | Tipo | Default | Descrizione |
 |---|---|---|---|
-| `heading` / `linkLabel` / `linkUrl` | string | `""` | Testata opzionale (omessa se `heading` e `linkUrl` sono vuoti) |
+| `showHeader` | boolean | `false` | Mostra la testata `.lm-section-header` |
+| `heading` / `linkLabel` / `linkUrl` | string | `""` | Testata opzionale (visibile solo se `showHeader` ed `heading`/`linkUrl` valorizzati) |
 | `postSource` | `all` \| `current_category` \| `fixed_categories` | `all` | Sorgente — stessa semantica del carousel-flat |
 | `categoryIds` | int[] | `[]` | Usato solo con `postSource = fixed_categories` |
-| `initialCount` | number | 12 | Card visibili al primo render |
-| `batchSize` | number | 12 | Quante card aggiungere ad ogni trigger di scroll |
-| `maxPosts` | number | 200 | Limite massimo di post renderizzati dal server |
+| `paginationMode` | `infinite` \| `fixed` | `infinite` | `infinite` = infinite scroll; `fixed` = mostra esattamente `maxPosts` card, niente scroll/sentinel |
+| `initialCount` | number | 12 | Card visibili al primo render (solo `infinite`) |
+| `batchSize` | number | 12 | Quante card aggiungere ad ogni trigger di scroll (solo `infinite`) |
+| `maxPosts` | number | 200 | `infinite`: limite massimo di post server-rendered. `fixed`: numero esatto di post mostrati |
 
-**Infinite scroll:**
+**Infinite scroll** (`paginationMode = infinite`):
 
 - Tutti i post (fino a `maxPosts`) sono renderizzati lato server. Il JS controlla la visibilità via classe `is-hidden` sui card con `index >= visibleCount`.
 - Un `<div class="lm-post-grid__sentinel">` posizionato dopo la grid è osservato da `IntersectionObserver` con `rootMargin: 300px`. Al rilevamento, `visibleCount` cresce di `batchSize`.
 - Se la sentinel resta intersecata anche dopo l'incremento (viewport tall / pochi post), `loadMore()` si rilancia ricorsivamente in `requestAnimationFrame` finché esce dal trigger area o `visibleCount === total`.
 - Lazy-load delle thumbnail: le `<img>` partono con `data-src`, il callback `applyVisibility` setta `src = dataset.src` solo per le card visibili e rimuove `data-src` al `load`/`error` per innescare il fade-in CSS.
+
+**Numero fisso** (`paginationMode = fixed`):
+
+- Vengono renderizzate e mostrate esattamente `maxPosts` card (`visibleCount = total`): niente sentinel, niente `IntersectionObserver`, nessun messaggio "fine risultati". Il lazy-load delle thumbnail resta attivo (tutte caricate al primo render).
 
 **Stato (Interactivity API):**
 

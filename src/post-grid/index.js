@@ -3,6 +3,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import {
 	PanelBody,
+	ToggleControl,
 	TextControl,
 	RangeControl,
 	SelectControl,
@@ -19,16 +20,19 @@ import './style.scss';
 
 function Edit( { attributes, setAttributes } ) {
 	const {
+		showHeader,
 		heading,
 		linkLabel,
 		linkUrl,
 		postSource,
+		paginationMode,
 		categoryIds,
 		initialCount,
 		batchSize,
 		maxPosts,
 	} = attributes;
 	const source = postSource || 'all';
+	const mode = paginationMode || 'infinite';
 
 	const categories = useSelect(
 		( select ) =>
@@ -56,22 +60,32 @@ function Edit( { attributes, setAttributes } ) {
 		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Testata', 'livemuseum' ) } initialOpen={ false }>
-					<TextControl
-						label={ __( 'Titolo sezione', 'livemuseum' ) }
-						value={ heading || '' }
-						onChange={ ( v ) => setAttributes( { heading: v } ) }
-						help={ __( 'Lascia vuoto per nascondere l\'intera testata.', 'livemuseum' ) }
+					<ToggleControl
+						label={ __( 'Mostra testata', 'livemuseum' ) }
+						checked={ !! showHeader }
+						onChange={ ( v ) => setAttributes( { showHeader: v } ) }
+						help={ __( 'Header di sezione come nei caroselli. Disattivato di default.', 'livemuseum' ) }
 					/>
-					<TextControl
-						label={ __( 'Etichetta link', 'livemuseum' ) }
-						value={ linkLabel || '' }
-						onChange={ ( v ) => setAttributes( { linkLabel: v } ) }
-					/>
-					<TextControl
-						label={ __( 'URL link', 'livemuseum' ) }
-						value={ linkUrl || '' }
-						onChange={ ( v ) => setAttributes( { linkUrl: v } ) }
-					/>
+					{ showHeader && (
+						<>
+							<TextControl
+								label={ __( 'Titolo sezione', 'livemuseum' ) }
+								value={ heading || '' }
+								onChange={ ( v ) => setAttributes( { heading: v } ) }
+								help={ __( 'Lascia vuoto per nascondere l\'intera testata.', 'livemuseum' ) }
+							/>
+							<TextControl
+								label={ __( 'Etichetta link', 'livemuseum' ) }
+								value={ linkLabel || '' }
+								onChange={ ( v ) => setAttributes( { linkLabel: v } ) }
+							/>
+							<TextControl
+								label={ __( 'URL link', 'livemuseum' ) }
+								value={ linkUrl || '' }
+								onChange={ ( v ) => setAttributes( { linkUrl: v } ) }
+							/>
+						</>
+					) }
 				</PanelBody>
 
 				<PanelBody title={ __( 'Sorgente post', 'livemuseum' ) } initialOpen={ true }>
@@ -118,32 +132,54 @@ function Edit( { attributes, setAttributes } ) {
 						) ) }
 				</PanelBody>
 
-				<PanelBody title={ __( 'Infinite scroll', 'livemuseum' ) } initialOpen={ false }>
-					<RangeControl
-						label={ __( 'Card iniziali', 'livemuseum' ) }
-						value={ initialCount ?? 12 }
-						onChange={ ( v ) => setAttributes( { initialCount: v } ) }
-						min={ 1 }
-						max={ 60 }
-						help={ __( 'Numero di card visibili al primo render.', 'livemuseum' ) }
+				<PanelBody title={ __( 'Paginazione', 'livemuseum' ) } initialOpen={ false }>
+					<SelectControl
+						label={ __( 'Modalità', 'livemuseum' ) }
+						value={ mode }
+						options={ [
+							{ label: __( 'Infinite scroll', 'livemuseum' ), value: 'infinite' },
+							{ label: __( 'Numero fisso di post', 'livemuseum' ), value: 'fixed' },
+						] }
+						onChange={ ( v ) => setAttributes( { paginationMode: v } ) }
 					/>
-					<RangeControl
-						label={ __( 'Batch per scroll', 'livemuseum' ) }
-						value={ batchSize ?? 12 }
-						onChange={ ( v ) => setAttributes( { batchSize: v } ) }
-						min={ 1 }
-						max={ 30 }
-						help={ __( 'Quante card aggiungere ad ogni trigger di scroll.', 'livemuseum' ) }
-					/>
-					<RangeControl
-						label={ __( 'Massimo totale', 'livemuseum' ) }
-						value={ maxPosts ?? 200 }
-						onChange={ ( v ) => setAttributes( { maxPosts: v } ) }
-						min={ 10 }
-						max={ 500 }
-						step={ 10 }
-						help={ __( 'Limite massimo di post renderizzati dal server.', 'livemuseum' ) }
-					/>
+					{ mode === 'infinite' ? (
+						<>
+							<RangeControl
+								label={ __( 'Card iniziali', 'livemuseum' ) }
+								value={ initialCount ?? 12 }
+								onChange={ ( v ) => setAttributes( { initialCount: v } ) }
+								min={ 1 }
+								max={ 60 }
+								help={ __( 'Numero di card visibili al primo render.', 'livemuseum' ) }
+							/>
+							<RangeControl
+								label={ __( 'Batch per scroll', 'livemuseum' ) }
+								value={ batchSize ?? 12 }
+								onChange={ ( v ) => setAttributes( { batchSize: v } ) }
+								min={ 1 }
+								max={ 30 }
+								help={ __( 'Quante card aggiungere ad ogni trigger di scroll.', 'livemuseum' ) }
+							/>
+							<RangeControl
+								label={ __( 'Massimo totale', 'livemuseum' ) }
+								value={ maxPosts ?? 200 }
+								onChange={ ( v ) => setAttributes( { maxPosts: v } ) }
+								min={ 10 }
+								max={ 500 }
+								step={ 10 }
+								help={ __( 'Limite massimo di post renderizzati dal server.', 'livemuseum' ) }
+							/>
+						</>
+					) : (
+						<RangeControl
+							label={ __( 'Numero di post', 'livemuseum' ) }
+							value={ maxPosts ?? 200 }
+							onChange={ ( v ) => setAttributes( { maxPosts: v } ) }
+							min={ 1 }
+							max={ 100 }
+							help={ __( 'Numero esatto di post mostrati (nessun infinite scroll).', 'livemuseum' ) }
+						/>
+					) }
 				</PanelBody>
 			</InspectorControls>
 

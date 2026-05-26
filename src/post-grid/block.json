@@ -13,6 +13,10 @@
 		"align": [ "full", "wide" ]
 	},
 	"attributes": {
+		"showHeader": {
+			"type": "boolean",
+			"default": false
+		},
 		"heading": {
 			"type": "string",
 			"default": ""
@@ -29,6 +33,11 @@
 			"type": "string",
 			"default": "all",
 			"enum": [ "all", "current_category", "fixed_categories" ]
+		},
+		"paginationMode": {
+			"type": "string",
+			"default": "infinite",
+			"enum": [ "infinite", "fixed" ]
 		},
 		"categoryIds": {
 			"type": "array",

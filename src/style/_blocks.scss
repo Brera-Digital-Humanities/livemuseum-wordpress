@@ -3,6 +3,13 @@
 // Override per blocchi core: regole che il Site Editor non sa esprimere
 // (es. styling granulare dentro un blocco) o overrides cross-blocco.
 
+// Bottoni di tema: padding compatto + bordo accent-1 di 2px.
+.wp-element-button,
+.wp-block-button__link {
+	padding: 8px 10px;
+	border: 2px solid var(--wp--preset--color--accent-1);
+}
+
 // -----------------------------------------------------------------------
 // Tag come pill con bordo. Copre i due blocchi WP più usati per i tag:
 //   - core/tag-cloud  → <a class="tag-cloud-link">

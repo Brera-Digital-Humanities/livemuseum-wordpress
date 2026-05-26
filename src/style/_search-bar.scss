@@ -1,0 +1,49 @@
+@use 'variables' as *;
+
+// Barra di ricerca segnaposto. Struttura HTML attesa:
+//   <form class="lm-search-bar" action="…" method="get">
+//     <input class="lm-search-bar__input" … />
+//     <button class="lm-search-bar__button">…</button>
+//   </form>
+
+.lm-search-bar {
+	display: flex;
+	align-items: stretch;
+	max-width: 32rem;
+	margin: 0 auto;
+
+	&__input {
+		flex: 1 1 auto;
+		min-width: 0;
+		padding: 0.75rem 1rem;
+		font-size: $fs-body;
+		color: $color-contrast;
+		background-color: #fff;
+		border: 1px solid var(--wp--preset--color--base);
+		border-right: none;
+		border-radius: 0; // squadrato
+
+		&:focus {
+			outline: none;
+		}
+	}
+
+	&__button {
+		flex: 0 0 auto;
+		padding: 0.75rem 1.5rem;
+		font-size: $fs-label;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var( --wp--preset--color--base, #fff );
+		background-color: var( --wp--preset--color--accent-1 );
+		border: 1px solid var( --wp--preset--color--accent-1 );
+		border-radius: 0; // squadrato e attaccato all'input
+		cursor: pointer;
+
+		&:hover,
+		&:focus-visible {
+			filter: brightness( 0.95 );
+		}
+	}
+}

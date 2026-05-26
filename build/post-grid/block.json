@@ -16,6 +16,10 @@
     ]
   },
   "attributes": {
+    "showHeader": {
+      "type": "boolean",
+      "default": false
+    },
     "heading": {
       "type": "string",
       "default": ""
@@ -35,6 +39,14 @@
         "all",
         "current_category",
         "fixed_categories"
+      ]
+    },
+    "paginationMode": {
+      "type": "string",
+      "default": "infinite",
+      "enum": [
+        "infinite",
+        "fixed"
       ]
     },
     "categoryIds": {

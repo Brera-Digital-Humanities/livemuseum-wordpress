@@ -11,10 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$heading       = isset( $attributes['heading'] ) ? (string) $attributes['heading'] : '';
-$link_label    = isset( $attributes['linkLabel'] ) ? (string) $attributes['linkLabel'] : '';
-$link_url      = isset( $attributes['linkUrl'] ) ? (string) $attributes['linkUrl'] : '';
-$post_source   = isset( $attributes['postSource'] ) ? (string) $attributes['postSource'] : 'all';
+$show_header     = ! empty( $attributes['showHeader'] );
+$heading         = isset( $attributes['heading'] ) ? (string) $attributes['heading'] : '';
+$link_label      = isset( $attributes['linkLabel'] ) ? (string) $attributes['linkLabel'] : '';
+$link_url        = isset( $attributes['linkUrl'] ) ? (string) $attributes['linkUrl'] : '';
+$pagination_mode = isset( $attributes['paginationMode'] ) && 'fixed' === $attributes['paginationMode'] ? 'fixed' : 'infinite';
+$post_source     = isset( $attributes['postSource'] ) ? (string) $attributes['postSource'] : 'all';
 $category_ids  = isset( $attributes['categoryIds'] ) && is_array( $attributes['categoryIds'] )
 	? array_values( array_filter( array_map( 'intval', $attributes['categoryIds'] ) ) )
 	: array();
@@ -92,8 +94,11 @@ while ( $query->have_posts() ) {
 }
 wp_reset_postdata();
 
-$total          = count( $cards );
-$visible_count  = min( $initial_count, $total );
+$total = count( $cards );
+
+// In modalità "fixed" si mostrano tutte le card renderizzate (nessun infinite
+// scroll); in "infinite" si parte da $initial_count e si carica a batch.
+$visible_count = 'fixed' === $pagination_mode ? $total : min( $initial_count, $total );
 
 $context = array(
 	'visibleCount' => $visible_count,
@@ -112,7 +117,7 @@ $wrapper_attrs = get_block_wrapper_attributes(
 );
 ?>
 <section <?php echo $wrapper_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-	<?php if ( '' !== $heading || '' !== $link_url ) : ?>
+	<?php if ( $show_header && ( '' !== $heading || '' !== $link_url ) ) : ?>
 		<header class="lm-section-header">
 			<?php if ( '' !== $heading ) : ?>
 				<h2 class="lm-section-header__title"><?php echo esc_html( $heading ); ?></h2>
@@ -153,6 +158,8 @@ $wrapper_attrs = get_block_wrapper_attributes(
 		<?php endforeach; ?>
 	</div>
 
-	<div class="lm-post-grid__sentinel" aria-hidden="true"></div>
-	<p class="lm-post-grid__status lm-post-grid__status--end"><?php echo esc_html__( 'Fine dei risultati', 'livemuseum' ); ?></p>
+	<?php if ( 'infinite' === $pagination_mode ) : ?>
+		<div class="lm-post-grid__sentinel" aria-hidden="true"></div>
+		<p class="lm-post-grid__status lm-post-grid__status--end"><?php echo esc_html__( 'Fine dei risultati', 'livemuseum' ); ?></p>
+	<?php endif; ?>
 </section>

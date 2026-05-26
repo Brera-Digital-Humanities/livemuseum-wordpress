@@ -1,13 +1,17 @@
 @use '../style/variables' as *;
 @use '../style/section-header';
 
-// Post grid: flex-wrap responsivo. Card basis = card-max-w; flex-wrap manda
-// in capo riga ciò che non entra. Su viewport stretti la flex-shrink riduce
-// la card fino a riempire la riga (mobile = 1 per riga naturalmente).
+// Post grid: flex-wrap responsivo. La card occupa il 25% della larghezza
+// scontando il gap (4 per riga su desktop): basis = (100% - 3*gap) / 4.
+// flex-wrap manda in capo riga ciò che non entra; su mobile --lm-pg-columns
+// scende così la card riempie naturalmente meno colonne.
 
 .lm-post-grid {
-	--lm-pg-card-max-w: 445px;
+	--lm-pg-columns: 4;
 	--lm-pg-gap: 10px;
+	--lm-pg-card-w: calc(
+		(100% - (var(--lm-pg-columns) - 1) * var(--lm-pg-gap)) / var(--lm-pg-columns)
+	);
 
 	position: relative;
 	width: 100%;
@@ -18,15 +22,15 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--lm-pg-gap);
-		justify-content: center;
+		justify-content: flex-start;
 		margin-top: 2rem;
 	}
 
 	&__card {
 		position: relative;
-		flex: 0 1 var(--lm-pg-card-max-w); // basis = max-w, no grow oltre, shrink se non entra
-		min-width: 0;                       // permette lo shrink corretto
-		max-width: 100%;                    // su mobile la card riempie tutta la riga
+		flex: 0 0 var(--lm-pg-card-w); // 25% (scontato il gap): 4 colonne fisse
+		min-width: 0;                  // permette lo shrink corretto
+		max-width: 100%;               // su mobile la card riempie tutta la riga
 
 		&.is-hidden {
 			display: none;
@@ -142,5 +146,18 @@
 		&.is-visible {
 			display: block;
 		}
+	}
+
+	// Riduce le colonne sui viewport più stretti (la card scala di conseguenza).
+	@media (max-width: 1024px) {
+		--lm-pg-columns: 3;
+	}
+
+	@media (max-width: 768px) {
+		--lm-pg-columns: 2;
+	}
+
+	@media (max-width: 480px) {
+		--lm-pg-columns: 1;
 	}
 }
