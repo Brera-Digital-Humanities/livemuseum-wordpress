@@ -8,3 +8,11 @@ button:focus, a:focus { outline: none; }
     background-color: var(--wp--preset--color--base);
     font-style: italic;
 }
+// Mobile: una card a (quasi) tutto schermo (1.5rem dai bordi).
+.header-desktop{display:block;}
+.header-mobile{display: none;}
+
+@media ( max-width: 768px ) {
+    .header-desktop{display: none;}
+    .header-mobile{display: block;}
+}
