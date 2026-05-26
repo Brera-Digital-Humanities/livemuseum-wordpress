@@ -17,9 +17,10 @@
 
 	--lm-cfl-row-gap: 50px;
 
-	// Variante arch (default).
-	--lm-cfl-card-h: 480px;
+	// Variante arch (default). card-h = image-h + meta-bar (80px, vedi &__meta),
+	// così la card contiene esattamente il contenuto e il __nav non ci finisce sopra.
 	--lm-cfl-image-h: 435px;
+	--lm-cfl-card-h: calc( var(--lm-cfl-image-h) + 80px );
 	--lm-cfl-image-radius: 50% 50% 0 0;
 
 	// Mobile: una card a (quasi) tutto schermo (1.5rem dai bordi).
@@ -35,7 +36,6 @@
 	font-family: $font-primary;
 
 	&--square {
-		--lm-cfl-card-h: 470px;
 		--lm-cfl-image-h: 420px;
 		--lm-cfl-image-radius: 0;
 	}
@@ -84,6 +84,7 @@
 		gap: 0.5rem;
 		padding: 0.2rem 0;
 		border-top: 1px solid $color-contrast;
+		box-sizing: border-box;
 		height: 80px;
 	}
 
