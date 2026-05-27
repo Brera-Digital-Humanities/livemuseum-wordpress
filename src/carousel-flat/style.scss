@@ -1,14 +1,10 @@
 @use '../style/variables' as *;
 @use '../style/section-header';
 
-// Carousel "flat": card unificate (immagine + meta + titolo overlay).
-// Due varianti via modificatore: .lm-carousel-flat--arch (immagine top-rounded)
-// e .lm-carousel-flat--square.
-//
-// Track infinito left-anchored: tutte le card in un grid 1×1 (stessa cella,
-// allineate a sinistra); JS scrive --lm-cfl-pos per card e CSS calcola
-// translateX(pos * card-step). pos -1 = buffer off-screen a sinistra dove le
-// card riciclano senza salto visibile.
+// Carousel "flat": card unificate (immagine + meta + titolo overlay), varianti
+// --arch (immagine top-rounded) e --square. Track infinito left-anchored: card
+// in grid 1×1 allineate a sinistra, JS scrive --lm-cfl-pos, CSS calcola
+// translateX(pos * card-step). pos -1 = buffer off-screen per il riciclo.
 
 .lm-carousel-flat {
 	--lm-cfl-card-w: 445px;
@@ -17,15 +13,16 @@
 
 	--lm-cfl-row-gap: 50px;
 
-	// Variante arch (default). card-h = image-h + meta-bar (80px, vedi &__meta),
-	// così la card contiene esattamente il contenuto e il __nav non ci finisce sopra.
+	// Variante arch (default). card-h = image-h + meta-bar (80px, vedi &__meta).
 	--lm-cfl-image-h: 435px;
 	--lm-cfl-card-h: calc( var(--lm-cfl-image-h) + 80px );
 	--lm-cfl-image-radius: 50% 50% 0 0;
 
-	// Mobile: una card a (quasi) tutto schermo (1.5rem dai bordi).
+	// Mobile: una card a (quasi) tutto schermo (1.5rem dai bordi). Altezza immagine
+	// proporzionale alla larghezza (rapporto 445:435), così l'arco resta arrotondato.
 	@media ( max-width: 768px ) {
 		--lm-cfl-card-w: calc( 100vw - 3rem );
+		--lm-cfl-image-h: calc( ( 100vw - 3rem ) * 435 / 445 );
 		--lm-cfl-row-gap: 1.5rem;
 	}
 
@@ -38,6 +35,11 @@
 	&--square {
 		--lm-cfl-image-h: 420px;
 		--lm-cfl-image-radius: 0;
+
+		// Mobile: altezza proporzionale alla larghezza (rapporto 445:420), resta quadrata.
+		@media ( max-width: 768px ) {
+			--lm-cfl-image-h: calc( ( 100vw - 3rem ) * 420 / 445 );
+		}
 	}
 
 	&__track {
@@ -75,8 +77,7 @@
 		text-decoration: none;
 	}
 
-	// Meta bar in alto: categoria a sinistra, data a destra. Sottile linea
-	// orizzontale superiore come separatore di card adiacenti senza gap.
+	// Meta bar in alto: categoria a sinistra, data a destra; linea superiore come separatore.
 	&__meta {
 		display: flex;
 		align-items: flex-start;
