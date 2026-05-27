@@ -172,7 +172,11 @@ $arrow_svg = '<svg class="lm-carousel-flat__arrow-icon" width="26" height="25" v
 		<?php endif; ?>
 	</header>
 
-	<div class="lm-carousel-flat__track">
+	<div
+		class="lm-carousel-flat__track"
+		data-wp-on--touchstart="actions.onTouchStart"
+		data-wp-on--touchend="actions.onTouchEnd"
+	>
 		<?php foreach ( $cards as $index => $card ) : ?>
 			<article class="lm-carousel-flat__card" data-index="<?php echo (int) $index; ?>">
 				<div class="lm-carousel-flat__meta">

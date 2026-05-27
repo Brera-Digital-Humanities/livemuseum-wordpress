@@ -105,7 +105,11 @@ $arrow_svg = '<svg class="lm-carousel-featured__arrow-icon" width="26" height="2
 		<?php endif; ?>
 	</header>
 
-	<div class="lm-carousel-featured__images">
+	<div
+		class="lm-carousel-featured__images"
+		data-wp-on--touchstart="actions.onTouchStart"
+		data-wp-on--touchend="actions.onTouchEnd"
+	>
 		<?php foreach ( $slides as $index => $slide ) : ?>
 			<div class="lm-carousel-featured__image-slide" data-index="<?php echo (int) $index; ?>">
 				<button

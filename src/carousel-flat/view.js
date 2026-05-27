@@ -22,7 +22,10 @@ function getInstanceState( ctx ) {
 
 // Card visibili, misurate dal DOM (card width + gap vs viewport).
 function measureVisible( ref ) {
-	const track = ref.querySelector( '.lm-carousel-flat__track' );
+	// ref può essere la section (callback init/watch) o il track stesso (handler touch).
+	const track = ref.classList.contains( 'lm-carousel-flat__track' )
+		? ref
+		: ref.querySelector( '.lm-carousel-flat__track' );
 	const card = track && track.querySelector( '.lm-carousel-flat__card' );
 	if ( ! track || ! card ) {
 		return 1;
