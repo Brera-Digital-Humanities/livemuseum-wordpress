@@ -16,7 +16,7 @@ button:focus, a:focus { outline: none; }
     .header-desktop{display: none;}
     .header-mobile{display: block;}
 
-    // Mantieni le colonne dell'header affiancate (WP di default le impila sotto i 781px).
+    // Mantiene le colonne dell'header affiancate (WP di default le impila sotto i 781px).
     .header-menu.wp-block-columns {
         flex-wrap: nowrap;
         align-items: center;
@@ -24,6 +24,12 @@ button:focus, a:focus { outline: none; }
         > .wp-block-column {
             flex-basis: 0 !important;
             flex-grow: 1;
+        }
+
+        // Colonna centrale: il testo è già nascosto,collassata.
+        > .wp-block-column:nth-child(2) {
+            flex-grow: 0;
+            flex-basis: 0 !important;
         }
 
         // La colonna del menu hamburger si adatta al contenuto e resta a destra.
