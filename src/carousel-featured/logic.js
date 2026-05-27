@@ -1,5 +1,4 @@
-// Logica pura del carousel "featured". Navigazione condivisa in ../shared.
-// CSS gestisce posizionamento (--lm-cf-offset * gap) e dimensioni (.is-current).
+// Logica pura del carousel "featured" (navigazione condivisa in ../shared).
 
 export { nextIndex, prevIndex, slideOffset, visibleIndices } from '../shared/carousel-nav';
 

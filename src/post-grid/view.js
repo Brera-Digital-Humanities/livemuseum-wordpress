@@ -1,6 +1,4 @@
-/**
- * Runtime Interactivity API del post-grid: infinite scroll via IntersectionObserver.
- */
+// Runtime Interactivity API del post-grid: infinite scroll via IntersectionObserver.
 import { store, getContext, getElement } from '@wordpress/interactivity';
 import { isCardVisible, nextCount, hasMore } from './logic';
 
@@ -50,9 +48,7 @@ function loadMore( ctx, sentinel ) {
 	}
 	ctx.visibleCount = nextCount( ctx.visibleCount, ctx.total, ctx.batchSize || 12 );
 
-	// Se la sentinel rimane intersecata (viewport alto / pochi post),
-	// l'observer non rifirerebbe: si rilancia in rAF finché esce dalla zona
-	// di trigger (300px sotto il viewport) o non ci sono più post.
+	// Se la sentinel resta intersecata (viewport alto), si rilancia in rAF finché esce dal trigger.
 	requestAnimationFrame( () => {
 		if ( ! hasMore( ctx.visibleCount, ctx.total ) ) {
 			return;

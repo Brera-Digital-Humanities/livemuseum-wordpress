@@ -1,10 +1,10 @@
 # LiveMuseum
 
-Child theme WordPress di **Twenty Twenty-Five** per il sito LiveMuseum: catalogo/archivio di post WordPress standard organizzati per categorie. Integra quattro blocchi Gutenberg custom — due caroselli (uno con effetto 3D, uno piatto con due varianti grafiche), una griglia post con infinite scroll, e un header di sezione standalone — server-rendered in PHP, con interattività affidata alla **WordPress Interactivity API** dove serve.
+Child theme WordPress di **Twenty Twenty-Five** per il sito LiveMuseum: catalogo di post organizzati per categorie. Aggiunge cinque blocchi Gutenberg custom — due caroselli (uno 3D, uno piatto con due varianti), una griglia post con infinite scroll, un header di sezione standalone e una barra di ricerca (in costruzione) — server-rendered in PHP, con interattività via **WordPress Interactivity API** dove serve.
 
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-blue.svg)](LICENSE)
 
-Rilasciato sotto **GNU General Public License v2 o successiva** ([GPL-2.0-or-later](LICENSE)) — in quanto child theme di WordPress eredita la licenza GPL per derivazione: ogni redistribuzione e opera derivata deve mantenere termini compatibili con la GPL.
+Rilasciato sotto **GPL-2.0-or-later** ([LICENSE](LICENSE)): come child theme eredita la GPL per derivazione.
 
 ---
 
@@ -12,9 +12,9 @@ Rilasciato sotto **GNU General Public License v2 o successiva** ([GPL-2.0-or-lat
 
 - WordPress 6.5+
 - Parent theme: **Twenty Twenty-Five**
-- Node.js 24 e npm (versione fissata in `.nvmrc`)
+- Node.js 24 e npm (versione in `.nvmrc`)
 
-Nessun plugin obbligatorio: i blocchi del tema usano solo dati nativi di WordPress (post, categorie, tag, featured image, estratto).
+Nessun plugin obbligatorio: i blocchi usano solo dati nativi di WordPress (post, categorie, tag, featured image, estratto).
 
 ---
 
@@ -23,10 +23,11 @@ Nessun plugin obbligatorio: i blocchi del tema usano solo dati nativi di WordPre
 ```
 livemuseum/
 ├── src/
-│   ├── carousel-featured/       # Carousel home — slide centrale ingrandita 3D
-│   ├── carousel-flat/           # Carousel home/related — card unificate
+│   ├── carousel-featured/       # Carousel 3D — slide centrale ingrandita
+│   ├── carousel-flat/           # Carousel piatto — card unificate
 │   ├── post-grid/               # Griglia post con infinite scroll
 │   ├── section-header/          # Header di sezione standalone
+│   ├── search-bar/              # Barra di ricerca (placeholder, in costruzione)
 │   ├── shared/                  # Logica condivisa fra blocchi (carousel-nav)
 │   └── style/                   # Stile globale del child theme (SCSS)
 │       ├── style.scss           # Entry point — @use dei parziali
@@ -34,8 +35,9 @@ livemuseum/
 │       ├── _typography.scss
 │       ├── _layout.scss
 │       ├── _main-navbar.scss
-│       ├── _blocks.scss
-│       └── _section-header.scss # Componente condiviso (header sezione)
+│       ├── _blocks.scss         # Override blocchi core
+│       ├── _section-header.scss # Componente condiviso (header sezione)
+│       └── _search-bar.scss
 ├── build/                       # File compilati — versionati nel repo (vedi sotto)
 ├── .github/workflows/           # CI + release GitHub Actions
 ├── functions.php
@@ -43,7 +45,6 @@ livemuseum/
 ├── webpack.config.js            # Estende wp-scripts con l'entry SCSS globale
 ├── package.json
 ├── .nvmrc
-├── .gitignore
 ├── LICENSE
 ├── SECURITY.md
 └── README.md
@@ -53,15 +54,13 @@ livemuseum/
 
 ## Setup git
 
-Il repository non è inizializzato di default:
-
 ```bash
 git init
 git add .
 git commit -m "chore: scaffolding iniziale"
 ```
 
-`node_modules/` è escluso via `.gitignore`. `build/` è invece versionata (vedi sezione Build).
+`node_modules/` è escluso via `.gitignore`; `build/` è invece versionata (vedi Build).
 
 ---
 
@@ -74,54 +73,28 @@ npm run build      # produzione
 npm run start      # watch mode
 ```
 
-`--experimental-modules` abilita i moduli ES6; `--blocks-manifest` genera `build/blocks-manifest.php`.
+`webpack.config.js` estende la config di `@wordpress/scripts` aggiungendo l'entry globale `src/style/style.scss` → `build/style/style-style.css`. `--experimental-modules` abilita i moduli ES6; `--blocks-manifest` genera `build/blocks-manifest.php`.
 
-`webpack.config.js` estende la default di `@wordpress/scripts` aggiungendo l'entry globale `src/style/style.scss` → `build/style/style-style.css`. Con `--experimental-modules` la config di default è un array `[scripts, modules]`: l'entry SCSS viene aggiunta alla "scripts".
-
-> La cartella `build/` è **versionata** nel repository (commit ad ogni rebuild rilevante). Questo permette di installare il tema direttamente da `git clone` senza dover eseguire `npm install && npm run build` sul server di destinazione. In sviluppo: ricordarsi di committare `build/` insieme alle sorgenti dopo modifiche significative.
+> La cartella `build/` è **versionata**: permette di installare il tema da `git clone` senza `npm install && npm run build` sul server. In sviluppo, committare `build/` insieme alle sorgenti dopo modifiche rilevanti.
 
 ---
 
 ## Test
 
-`wp-scripts test-unit-js` (Jest + jsdom, già nelle devDependencies):
-
 ```bash
 nvm use
-npm run test:unit
+npm run test:unit   # wp-scripts test-unit-js (Jest + jsdom)
 ```
 
-**Architettura.** Ogni blocco interattivo isola la logica di calcolo in un file `logic.js` accanto al `view.js`. `logic.js` esporta funzioni pure (niente DOM, niente `@wordpress/interactivity`); `view.js` le importa e le usa per gli effetti DOM. I test esercitano `logic.js` in isolamento. Logica condivisa fra più blocchi va in `src/shared/` con i propri test.
+Ogni blocco interattivo isola la logica di calcolo in un `logic.js` (funzioni pure, niente DOM) accanto al `view.js`, che la usa per gli effetti DOM. I test esercitano `logic.js` in isolamento; la logica condivisa sta in `src/shared/`. `wp-scripts` rileva automaticamente i `*.test.js` sotto `src/`.
 
-**Suite presenti:**
-
-| Suite | File testato | Cosa copre |
-|---|---|---|
-| `src/carousel-featured/__tests__/logic.test.js` | `src/carousel-featured/logic.js` | `nextIndex`/`prevIndex` (wrap circolare), `slideOffset` (percorso più corto), `slideTransform` (offset/opacity/zIndex/pointer-events su centro, adiacente, oltre visibilità), `boxTransform`, `visibleIndices` |
-| `src/carousel-flat/__tests__/logic.test.js` | `src/carousel-flat/logic.js` | `visibleCount` (card che entrano), `clampIndex` (indice vincolato), `trackOffset` (offset left-anchored + buffer `-1` per il riciclo) |
-| `src/post-grid/__tests__/logic.test.js` | `src/post-grid/logic.js` | `isCardVisible` (index vs visibleCount), `nextCount` (incremento con saturazione al totale), `hasMore` |
-
-`wp-scripts test-unit-js` rileva automaticamente i `*.test.js` sotto `src/` — nessuna configurazione.
+Suite presenti: `carousel-featured`, `carousel-flat`, `post-grid` (una `logic.test.js` per blocco).
 
 ---
 
 ## Stile globale
 
-```
-src/style/
-├── style.scss           # Entry — @use 'variables', 'typography', 'layout',
-│                        #          'main-navbar', 'blocks', 'section-header'
-├── _variables.scss      # Alias delle CSS custom properties di TT5
-├── _typography.scss
-├── _layout.scss
-├── _main-navbar.scss
-├── _blocks.scss         # Override blocchi core
-└── _section-header.scss # Componente riutilizzabile — vedi sotto
-```
-
-L'entry `style.scss` viene compilato in `build/style/style-style.css` (convenzione di `mini-css-extract-plugin`: `<entry>-style.css`). `functions.php` lo enqueua come dipendente di `twentytwentyfive-style`, con versione `filemtime()` per cache busting.
-
-Il file alla radice `style.css` resta solo come header child theme richiesto da WordPress: tutte le regole vivono nei parziali.
+L'entry `src/style/style.scss` (`@use` di `variables`, `typography`, `layout`, `main-navbar`, `blocks`, `section-header`, `search-bar`) compila in `build/style/style-style.css`. `functions.php` lo enqueua come dipendente di `twentytwentyfive-style`, con versione `filemtime()` per cache busting. Il `style.css` alla radice resta solo come header child theme: tutte le regole vivono nei parziali.
 
 **Compatibilità con TT5.** `_variables.scss` **aliasa** le CSS custom properties di TT5 senza ridefinirle:
 
@@ -131,12 +104,10 @@ $color-contrast: var(--wp--preset--color--contrast, #221919);
 $fs-label:       var(--wp--preset--font-size--small,    0.875rem); // ~14px
 $fs-body:        var(--wp--preset--font-size--medium,   1rem);     // ~16px
 $fs-title:       var(--wp--preset--font-size--x-large,  1.5rem);   // ~24px
-$fs-title-small: var(--wp--preset--font-size--large,    1.3rem);   // titolo card post-grid
+$fs-title-small: var(--wp--preset--font-size--large,    1.3rem);   // ~21px
 ```
 
-Modifiche a palette/scala tipografica nel Site Editor o in `theme.json` si propagano all'SCSS senza ricompilare.
-
-**Font Instrument Sans.** Va registrato dal Site Editor (Stili → Tipografia → Font) con slug `instrument-sans`.
+Così modifiche a palette/scala tipografica nel Site Editor o in `theme.json` si propagano all'SCSS senza ricompilare. Il font **Instrument Sans** va registrato dal Site Editor (Stili → Tipografia) con slug `instrument-sans`.
 
 ---
 
@@ -144,9 +115,7 @@ Modifiche a palette/scala tipografica nel Site Editor o in `theme.json` si propa
 
 ### `.lm-section-header`
 
-Header di sezione riutilizzabile in più blocchi e template part. Bordo superiore tratteggiato (dashes 2,8 realizzato con `repeating-linear-gradient` perché `border-style: dashed` non controlla il pattern), titolo a sinistra con quadratino accent (13×13, `--wp--preset--color--accent-1`), link "scopri di più" a destra opzionale.
-
-**HTML:**
+Header di sezione riutilizzabile (bordo superiore tratteggiato via `repeating-linear-gradient`, titolo con quadratino accent, link "scopri di più" opzionale).
 
 ```html
 <header class="lm-section-header">
@@ -155,197 +124,109 @@ Header di sezione riutilizzabile in più blocchi e template part. Bordo superior
 </header>
 ```
 
-**Uso in un blocco custom:** `@use '../style/section-header';` nello SCSS del blocco. Le ~30 righe vengono incluse anche nel bundle del blocco così l'anteprima Site Editor mostra lo stile.
+Per usarlo in un blocco: `@use '../style/section-header';` nel suo SCSS, così l'anteprima del Site Editor ne ha lo stile.
 
 ---
 
 ## Blocchi custom
 
-> Tutti i blocchi del tema usano solo dati nativi WordPress: titolo, estratto, featured image, categorie, tag, permalink.
+> Tutti i blocchi usano solo dati nativi WordPress: titolo, estratto, featured image, categorie, tag, permalink. Post renderizzati server-side in PHP; il JS controlla la sola posizione/visibilità via `transform` e classi.
 
 ### 1. Carousel Featured (`livemuseum/carousel-featured`)
 
-Carousel con due rail orizzontali sincronizzati su `currentIndex` e wrap circolare.
+Carousel con due rail orizzontali (immagini + box dettagli) sincronizzati su `currentIndex`, wrap circolare. Slide centrale 900×600 ingrandita, laterali 450×450; 3 slide visibili, il resto `opacity: 0`. Box dettagli (425px) con titolo, excerpt e tag linkati. Frecce + swipe touch (soglia 50px). Lazy-load delle thumbnail visibili. Su mobile (≤768px): una slide full-width per volta (override delle custom property, logica invariata).
 
-**Rail immagini:**
-- Slide centrale 900×600 ("in evidenza"), slide laterali 450×450 square.
-- Gap edge-to-edge centro→laterale: 75px (= 750px center-to-center).
-- 3 slide visibili (centro + 1 per lato), il resto `opacity: 0`.
-- Allineamento verticale al centro; altezza riga fissa a 600px (no salto durante l'animazione di resize centrale↔laterale).
-- Lazy-load thumbnail (`data-src` → `src` su `data-wp-watch`, fade-in CSS).
-
-**Rail box dettagli:**
-- Larghezza fissa 425px, gap 25px (= 450px center-to-center).
-- Visibili tanti quanti ne entrano nello schermo (overflow:hidden della section taglia i fuori-viewport).
-- Altezza riga auto: cresce con il box più alto.
-- Layout: titolo, excerpt, tag. I tag sono link all'archivio tag (hover: colori invertiti). Il titolo in hover diventa `accent-1` senza underline.
-- Al primo render: fade-in dopo posizionamento (no "fan-out" dal centro).
-
-**Frecce in basso** distanziate 50px dalla riga box. Stesso SVG (`width: 26 height: 25`), `.--prev` ribaltata con `scaleX(-1)`.
-
-**Interazione:** frecce (bottoni prev/next), swipe touch (soglia 50px, `touch-action: pan-y`). Il bottone trasparente `__hit` è **solo sull'immagine** (non sul box dettagli): click su immagine laterale → la porta al centro; click su immagine centrale → apre il permalink. Nel box, solo il link del titolo è cliccabile.
-
-**Mobile (≤ 768px):** una slide per volta a full-width. Slider semplice — le custom properties vengono override-ate (`--lm-cf-image-gap: 100%`, `--lm-cf-box-w: calc(100% - 3rem)`, ecc.), tutta la logica JS/CSS resta identica.
-
-**Attributi blocco:**
+Click: immagine laterale → la porta al centro; immagine centrale → apre il permalink. Il box è cliccabile solo sul link del titolo.
 
 | Attributo | Tipo | Default | Descrizione |
 |---|---|---|---|
 | `heading` | string | "Mostre ed eventi" | Titolo in alto a sx |
-| `linkLabel` | string | "Scopri di più" | Etichetta link in alto a dx |
-| `linkUrl` | string | "" | URL del link (vuoto = link nascosto) |
-| `postSource` | `all` \| `current_category` \| `fixed_categories` | `all` | Sorgente post. `current_category` usa il termine queried (template archivio categoria); fuori da quel contesto degrada a "tutti i post". `fixed_categories` filtra su `categoryIds` |
-| `categoryIds` | int[] | `[]` | Categorie WP (usato solo se `postSource = fixed_categories`) |
+| `linkLabel` / `linkUrl` | string | "Scopri di più" / "" | Link in alto a dx (vuoto = nascosto) |
+| `postSource` | `all` \| `current_category` \| `fixed_categories` | `all` | Sorgente post (vedi nota sotto) |
+| `categoryIds` | int[] | `[]` | Solo con `fixed_categories` |
 | `postCount` | number | 20 | Numero massimo di slide |
 
-**Interactivity API — store `livemuseum/carousel-featured`:**
-
-| Elemento | Descrizione |
-|---|---|
-| context `currentIndex` | Indice della slide centrale |
-| context `total` | Numero totale di slide |
-| action `next` / `prev` | Avanza/indietreggia (wrap circolare) |
-| action `onSlideClick` | Click su slide: laterale → goTo; centrale → segue link titolo |
-| action `onTouchStart` / `onTouchEnd` | Swipe con soglia 50px |
-| callback `applyTransforms` | Scrive `--lm-cf-offset` su ogni slide, gestisce snap (primo render + wrap) e lazy-load immagini. Eseguito su `data-wp-init` e `data-wp-watch` |
-
-**Architettura:**
-- Post renderizzati server-side in PHP; JS controlla la posizione visiva via `transform`.
-- `logic.js` ritorna numeri (`offset`, `opacity`, `zIndex`, `pointerEvents`); CSS calcola `translateX(offset * gap)` con i gap come custom properties.
-- Ogni rail è un **CSS grid 1×1** (tutte le slide in `grid-row: 1; grid-column: 1`): la cella unica auto-fitta l'altezza al box più alto e il `justify-self: center` centra ogni slide; `translateX` la sposta in base all'offset.
-- `grid-template-columns: minmax(0, 1fr)` vincola la colonna al container — senza questo, l'immagine intrinseca della featured potrebbe far esplodere il grid causando overflow orizzontale.
-- **Snap istantaneo (transition: none + reflow) in due casi:** primo render del rail box (no "fan-out"); wrap di una slide che salta da un lato all'altro del carousel (offset cambiato di >1 in uno step).
-- Stato non-reattivo (touch coords): tenuto in una `WeakMap` keyed by `ctx`, **fuori** dal context Interactivity — altrimenti `data-wp-watch` rifirerebbe ad ogni scrittura.
-- `viewScriptModule` (non `viewScript`) in `block.json`: necessario per il caricamento come ES module e la risoluzione dell'import map `@wordpress/interactivity`.
-
----
+**Architettura.** Ogni rail è un **CSS grid 1×1** (tutte le slide in `grid-row/column: 1`); `logic.js` ritorna numeri (`offset`, `opacity`, `zIndex`), il CSS calcola `translateX(offset * gap)` con i gap come custom property. `grid-template-columns: minmax(0, 1fr)` evita l'overflow orizzontale dell'immagine featured. Snap istantaneo (`transition: none` + reflow) al primo render dei box e quando una slide fa wrap da un lato all'altro. Le coordinate touch (stato non-reattivo) stanno in una `WeakMap` keyed by `ctx`, fuori dal context Interactivity (altrimenti `data-wp-watch` rifirerebbe). `block.json` usa `viewScriptModule` per il caricamento come ES module.
 
 ### 2. Carousel Flat (`livemuseum/carousel-flat`)
 
-Carousel orizzontale con **card unificate** (immagine + meta + titolo overlay come singolo blocco), pensato sia per la home page (con selezione categoria) sia per la sezione "related" nella single (con scelta tra stessi tag / stesse categorie). Stessa intestazione `.lm-section-header` del featured.
+Carousel orizzontale con **card unificate** (immagine + meta + titolo overlay), per la home (selezione categoria) o per la sezione "related" nella single (stessi tag / categorie). Carousel **infinito left-anchored**: la prima card parte a sinistra, si scorre un articolo per volta; se le card entrano tutte, niente scroll. Frecce + swipe (50px), lazy-load, zoom immagine in hover. Il link avvolge **solo l'immagine** (meta-bar esclusa). Su mobile: una card per volta a `calc(100vw - 3rem)`, centrata.
 
-**Layout della card:**
-- Barra meta in alto (fuori dall'area cliccabile dell'immagine): categorie a sinistra (badge linkati all'archivio, hover con colori invertiti), data a destra. Bordo orizzontale superiore come separatore.
-- **Quali categorie**: se la sorgente è `current_category` o `fixed_categories` mostra solo le categorie del filtro (così il badge corrisponde sempre alla scelta del blocco); con `all` o le modalità related mostra **tutte** le categorie del post.
-- Immagine sotto la barra meta, con `margin-top: 3rem` per separare visivamente dalla meta-bar.
-- Titolo overlay con sfondo bianco (`$fs-title-small`), `position: absolute` con `left/right/bottom: 0.5rem` e `padding: 0.5rem`, sovrapposto alla parte inferiore dell'immagine.
+La card ha una barra meta in alto (categorie linkate a sinistra, data a destra) e titolo overlay su sfondo bianco in basso sull'immagine. Quali categorie mostrare: con `current_category`/`fixed_categories` solo quelle del filtro; con `all` o le modalità related, tutte le categorie del post.
 
-**Due varianti grafiche (attributo `variant`):**
-
-| Variante | Card | Immagine | Gap fra card | Note |
-|---|---|---|---|---|
-| `arch` (default) | 445×480 | 445×435 con `border-radius: 50% 50% 0 0` (arco) | 10px | Variante home page principale |
-| `square` | 445×470 | 445×420 senza arrotondamenti | 10px | Variante quadrata |
-
-**Attributi blocco:**
+| Variante (`variant`) | Card | Immagine | Note |
+|---|---|---|---|
+| `arch` (default) | 445×515 | 445×435, `border-radius: 50% 50% 0 0` (arco) | Variante home |
+| `square` | 445×500 | 445×420, senza arrotondamenti | Variante quadrata |
 
 | Attributo | Tipo | Default | Descrizione |
 |---|---|---|---|
 | `heading` | string | "News" | Titolo testata |
-| `linkLabel` / `linkUrl` | string | "Scopri di più" / "" | Link "scopri di più" opzionale |
+| `linkLabel` / `linkUrl` | string | "Scopri di più" / "" | Link opzionale |
 | `variant` | `arch` \| `square` | `arch` | Variante grafica |
 | `postSource` | enum (6 valori) | `all` | Sorgente — vedi sotto |
-| `categoryIds` | int[] | `[]` | Usato solo con `postSource = fixed_categories` |
+| `categoryIds` | int[] | `[]` | Solo con `fixed_categories` |
 | `postCount` | number | 20 | Massimo numero di card |
 
-**Valori di `postSource`:**
+**Valori di `postSource`:** `all`, `current_category` (post della categoria visualizzata, fuori contesto → tutti), `fixed_categories` (filtro su `categoryIds`), `same_tags` / `same_categories` / `same_tags_or_categories` (related al post corrente, solo in single, fuori → tutti). Nelle modalità related il post corrente è escluso (`post__not_in`).
 
-| Valore | Comportamento |
-|---|---|
-| `all` | Tutti i post |
-| `current_category` | Solo i post della categoria visualizzata (template archivio); fuori contesto → tutti i post |
-| `fixed_categories` | Filtro su `categoryIds` |
-| `same_tags` | Related: stessi tag del post corrente (solo in single, fuori → tutti) |
-| `same_categories` | Related: stesse categorie del post corrente (solo in single) |
-| `same_tags_or_categories` | Related: stessi tag OR stesse categorie (`tax_query` con `relation: OR`) |
-
-Nelle modalità related il post corrente viene escluso (`post__not_in`).
-
-**Interattività:** carousel **infinito left-anchored**, non centrato: la prima card parte a sinistra (posizione 0) e si scorre un articolo alla volta. Quando ci sono più card di quante ne entrano, lo scorrimento è continuo (wrap circolare); se entrano tutte, niente scroll. Frecce (in basso, ai lati con `justify-content: space-between`), swipe touch (soglia 50px, `touch-action: pan-y`). Lazy-load thumbnail nelle card vicine al range visibile. Hover sull'immagine: zoom leggero (`scale(1.05)`, clippato da `overflow: hidden`). Il link della card avvolge **solo l'immagine** (meta-bar fuori dall'area cliccabile).
-
-**Mobile (≤ 768px):** una card per volta a `calc(100vw - 3rem)`, centrata (`justify-self: center`).
-
-**Architettura:** grid 1×1 (tutte le card nella stessa cella, `justify-self: start`). JS scrive `--lm-cfl-pos` per card, CSS calcola `translateX(pos * card-step)`. `logic.js` espone `visibleCount`, `clampIndex` e `trackOffset` (offset left-anchored: `pos 0` = bordo sinistro; con wrap la posizione più lontana diventa `-1` = buffer off-screen a sinistra dove la card ricicla). `view.js` applica `transition: none` (snap) al primo render e quando una card ricicla dall'altro lato: il riposizionamento avviene nel buffer fuori schermo, quindi **non è mai visibile**.
-
----
+**Architettura.** Grid 1×1 con `justify-self: start`; JS scrive `--lm-cfl-pos`, CSS calcola `translateX(pos * card-step)`. `logic.js` espone `visibleCount`, `clampIndex`, `trackOffset` (con wrap, la posizione più lontana diventa `-1` = buffer off-screen dove la card ricicla). Lo snap (`transition: none`) al riciclo avviene fuori schermo, quindi non è mai visibile.
 
 ### 3. Post Grid (`livemuseum/post-grid`)
 
-Griglia di post con **infinite scroll** o **numero fisso** di post. Card identica al box quadrato del [Carousel Flat](#2-carousel-flat-livemuseumcarousel-flat): meta-bar con categorie linkate (stessa logica "quali categorie" del flat: filtro → solo quelle scelte, `all` → tutte), link solo sull'immagine, immagine con `aspect-ratio: 445/420` e zoom leggero in hover (`scale(1.05)`), titolo overlay con sfondo bianco. Layout responsive via **flex-wrap**: ogni card occupa il **25% della larghezza scontando il gap** (`flex-basis: calc((100% - 3 * gap) / 4)` → 4 per riga). Il numero di colonne è la custom property `--lm-pg-columns`, ridotta a 3 (≤1024px), 2 (≤768px) e 1 (≤480px) via media query, così la card scala di conseguenza.
-
-**Testata opzionale.** Header `.lm-section-header` come nei caroselli, **disattivato di default** (`showHeader: false`). Va abilitato dal toggle "Mostra testata"; con il toggle attivo si compilano titolo/link (la testata resta comunque omessa se sia `heading` sia `linkUrl` sono vuoti).
-
-**Attributi blocco:**
+Griglia di post con **infinite scroll** o **numero fisso**. Card identica al box quadrato del Carousel Flat. Layout via **flex-wrap**: ogni card occupa il 25% scontando il gap (`flex-basis: calc((100% - 3 * gap) / 4)` → 4 per riga), con `--lm-pg-columns` ridotta a 3 (≤1024px), 2 (≤768px), 1 (≤480px). Testata `.lm-section-header` opzionale, **disattivata di default** (`showHeader: false`).
 
 | Attributo | Tipo | Default | Descrizione |
 |---|---|---|---|
-| `showHeader` | boolean | `false` | Mostra la testata `.lm-section-header` |
-| `heading` / `linkLabel` / `linkUrl` | string | `""` | Testata opzionale (visibile solo se `showHeader` ed `heading`/`linkUrl` valorizzati) |
-| `postSource` | `all` \| `current_category` \| `fixed_categories` | `all` | Sorgente — stessa semantica del carousel-flat |
-| `categoryIds` | int[] | `[]` | Usato solo con `postSource = fixed_categories` |
-| `paginationMode` | `infinite` \| `fixed` | `infinite` | `infinite` = infinite scroll; `fixed` = mostra esattamente `maxPosts` card, niente scroll/sentinel |
-| `initialCount` | number | 12 | Card visibili al primo render (solo `infinite`) |
-| `batchSize` | number | 12 | Quante card aggiungere ad ogni trigger di scroll (solo `infinite`) |
-| `maxPosts` | number | 200 | `infinite`: limite massimo di post server-rendered. `fixed`: numero esatto di post mostrati |
+| `showHeader` | boolean | `false` | Mostra la testata |
+| `heading` / `linkLabel` / `linkUrl` | string | `""` | Testata opzionale (solo se `showHeader`) |
+| `postSource` | `all` \| `current_category` \| `fixed_categories` | `all` | Stessa semantica del carousel-flat |
+| `categoryIds` | int[] | `[]` | Solo con `fixed_categories` |
+| `paginationMode` | `infinite` \| `fixed` | `infinite` | `fixed` = mostra esattamente `maxPosts`, niente scroll |
+| `initialCount` | number | 12 | Card al primo render (solo `infinite`) |
+| `batchSize` | number | 12 | Card aggiunte per trigger di scroll (solo `infinite`) |
+| `maxPosts` | number | 200 | `infinite`: max post server-rendered. `fixed`: numero esatto mostrato |
 
-**Infinite scroll** (`paginationMode = infinite`):
-
-- Tutti i post (fino a `maxPosts`) sono renderizzati lato server. Il JS controlla la visibilità via classe `is-hidden` sui card con `index >= visibleCount`.
-- Un `<div class="lm-post-grid__sentinel">` posizionato dopo la grid è osservato da `IntersectionObserver` con `rootMargin: 300px`. Al rilevamento, `visibleCount` cresce di `batchSize`.
-- Se la sentinel resta intersecata anche dopo l'incremento (viewport tall / pochi post), `loadMore()` si rilancia ricorsivamente in `requestAnimationFrame` finché esce dal trigger area o `visibleCount === total`.
-- Lazy-load delle thumbnail: le `<img>` partono con `data-src`, il callback `applyVisibility` setta `src = dataset.src` solo per le card visibili e rimuove `data-src` al `load`/`error` per innescare il fade-in CSS.
-
-**Numero fisso** (`paginationMode = fixed`):
-
-- Vengono renderizzate e mostrate esattamente `maxPosts` card (`visibleCount = total`): niente sentinel, niente `IntersectionObserver`, nessun messaggio "fine risultati". Il lazy-load delle thumbnail resta attivo (tutte caricate al primo render).
-
-**Stato (Interactivity API):**
-
-| Context | Descrizione |
-|---|---|
-| `visibleCount` | Numero di card attualmente visibili |
-| `total` | Totale dei post server-rendered |
-| `batchSize` | Incremento per ogni step |
-
-**Callback:**
-
-| Callback | Trigger | Cosa fa |
-|---|---|---|
-| `init` | `data-wp-init` | Applica visibilità iniziale + lazy-load + setup `IntersectionObserver` sulla sentinel |
-| `applyVisibility` | `data-wp-watch` (al cambio di `visibleCount`) | Aggiorna le classi `is-hidden`/`is-loading`, carica le nuove thumbnail, mostra il messaggio "fine risultati" quando esaurito |
-
----
+**Infinite scroll.** Tutti i post (fino a `maxPosts`) sono renderizzati lato server; il JS nasconde con `is-hidden` le card oltre `visibleCount`. Una sentinel dopo la grid è osservata da `IntersectionObserver` (`rootMargin: 300px`): al trigger `visibleCount` cresce di `batchSize`, e `loadMore()` si rilancia in `requestAnimationFrame` se la sentinel resta intersecata. Lazy-load delle thumbnail visibili (`data-src` → `src`, fade-in al `load`). In modalità `fixed`: niente sentinel né observer.
 
 ### 4. Section Header (`livemuseum/section-header`)
 
-Blocco statico che renderizza il componente `.lm-section-header` (dashed top border + titolo con quadratino accent + link "scopri di più" opzionale) come blocco standalone, utile per intestare sezioni custom senza dover incorporare un carousel.
-
-Solo PHP, nessuna runtime JS. Se sia `heading` sia `linkUrl` sono vuoti, il blocco non emette markup.
+Blocco statico (solo PHP) che renderizza il componente `.lm-section-header` standalone, per intestare sezioni custom. Se sia `heading` sia `linkUrl` sono vuoti, non emette markup.
 
 | Attributo | Tipo | Default | Descrizione |
 |---|---|---|---|
 | `heading` | string | "Titolo sezione" | Testo a sinistra |
 | `linkLabel` | string | "Scopri di più" | Etichetta del link a destra |
-| `linkUrl` | string | "" | URL del link; vuoto = link nascosto |
+| `linkUrl` | string | "" | URL del link; vuoto = nascosto |
+
+### 5. Search Bar (`livemuseum/search-bar`) — _in costruzione_
+
+> ⚠️ **Blocco placeholder.** Campo di ricerca + bottone squadrati che inviano la query a un URL provvisorio (`actionUrl`, default `https://app.livemuseum/`). Solo markup statico, nessuna logica di ricerca reale: da completare quando il backend di ricerca sarà disponibile.
+
+| Attributo | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `placeholder` | string | "Cerca…" | Placeholder del campo |
+| `buttonLabel` | string | "Cerca" | Etichetta del bottone |
+| `actionUrl` | string | `https://app.livemuseum/` | URL di destinazione (provvisorio) |
+| `paramName` | string | `q` | Chiave query string |
 
 ---
 
 ## Tecnologie
 
 - **WordPress Interactivity API** (`@wordpress/interactivity`) — stato reattivo e binding dichiarativo
-- **wp-scripts 32** — build toolchain (Webpack, SCSS, ESM modules, `--experimental-modules`)
+- **wp-scripts 32** — build toolchain (Webpack, SCSS, ESM modules)
 
 ---
 
 ## Sicurezza
 
-Per segnalare una vulnerabilità: vedi [SECURITY.md](SECURITY.md). Non aprire issue pubbliche su GitHub.
+Per segnalare una vulnerabilità: vedi [SECURITY.md](SECURITY.md). Non aprire issue pubbliche.
 
-Pratiche adottate:
-- Escape sistematico in output PHP: `esc_html()`, `esc_url()`, `esc_attr()`, `esc_attr__()` / `esc_html__()`. `wp_kses_post()` per contenuti HTML/WYSIWYG (quando entreranno in gioco).
-- I JSON inviati alla Interactivity API via `data-wp-context` sono prodotti da `wp_json_encode()` e passati a `get_block_wrapper_attributes()` che li `esc_attr`-a.
-- `register_block_type()` solo su sottocartelle di `build/` con un `block.json` valido.
-- Filtro `style_loader_src` / `script_loader_src` che applica `filemtime()` solo a path sotto `/build/` del tema.
+- Escape sistematico in output PHP (`esc_html()`, `esc_url()`, `esc_attr()`, `esc_*__()`).
+- I JSON per la Interactivity API passano da `wp_json_encode()` + `get_block_wrapper_attributes()` (che li `esc_attr`-a).
+- `register_block_type()` solo su sottocartelle di `build/` con `block.json` valido.
+- Filtro `style_loader_src` / `script_loader_src`: `filemtime()` solo su path sotto `/build/`.
 
 ---
 
@@ -353,8 +234,8 @@ Pratiche adottate:
 
 GitHub Actions in `.github/workflows/`:
 
-- **CI** (`ci.yml`) — `npm install && npm run build && npm run test:unit` su push a `master` e su PR.
-- **Release** (`release.yml`) — su tag `v*`: build + `npm run plugin-zip` + GitHub Release con note generate automaticamente.
+- **CI** (`ci.yml`) — `npm install && npm run build && npm run test:unit` su push a `main` e su PR.
+- **Release** (`release.yml`) — su tag `v*`: build + `npm run plugin-zip` + GitHub Release.
 
 ```bash
 git tag v1.0.1

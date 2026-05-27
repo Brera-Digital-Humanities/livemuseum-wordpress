@@ -83,8 +83,7 @@ switch ( $post_source ) {
 				);
 			}
 		}
-		// Se non è stato aggiunto alcun ramo (post senza tag né categorie compatibili),
-		// non applichiamo tax_query così evitiamo una query vuota.
+		// Senza rami (post senza tag né categorie) niente tax_query: evita una query vuota.
 		if ( count( $tax_query ) > 1 ) {
 			$query_args['tax_query'] = $tax_query;
 		}
@@ -96,9 +95,7 @@ switch ( $post_source ) {
 		break;
 }
 
-// Categorie da mostrare nel badge:
-//  - filtro per categoria (current/fixed) → solo quelle del filtro;
-//  - all / related → tutte le categorie del post.
+// Categorie nel badge: con filtro (current/fixed) solo quelle del filtro, con all/related tutte.
 $highlight_cat_ids = null; // null = tutte
 if ( 'current_category' === $post_source ) {
 	$queried = get_queried_object();

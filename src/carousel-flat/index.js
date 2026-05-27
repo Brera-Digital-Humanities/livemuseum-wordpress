@@ -1,5 +1,4 @@
-// Registrazione lato Site Editor: solo controlli + ServerSideRender per l'anteprima.
-// Il rendering reale è in render.php.
+// Registrazione lato Site Editor: controlli + ServerSideRender (render reale in render.php).
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import {

@@ -1,10 +1,7 @@
 @use '../style/variables' as *;
 @use '../style/section-header';
 
-// Post grid: flex-wrap responsivo. La card occupa il 25% della larghezza
-// scontando il gap (4 per riga su desktop): basis = (100% - 3*gap) / 4.
-// flex-wrap manda in capo riga ciò che non entra; su mobile --lm-pg-columns
-// scende così la card riempie naturalmente meno colonne.
+// Post grid: flex-wrap, card al 25% scontando il gap (basis = (100% - 3*gap)/4); --lm-pg-columns cala su mobile.
 
 .lm-post-grid {
 	--lm-pg-columns: 4;

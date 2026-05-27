@@ -1,3 +1,2 @@
-// Re-include il partial condiviso così l'editor preview ha gli stili.
-// In frontend gli stili arrivano già dal bundle globale (style/style-style.css).
+// Re-include il partial condiviso per l'anteprima del Site Editor (in frontend arriva dal bundle globale).
 @use '../style/search-bar';

@@ -1,10 +1,7 @@
 @use '../style/variables' as *;
 @use '../style/section-header';
 
-// Carousel "flat": card unificate (immagine + meta + titolo overlay), varianti
-// --arch (immagine top-rounded) e --square. Track infinito left-anchored: card
-// in grid 1×1 allineate a sinistra, JS scrive --lm-cfl-pos, CSS calcola
-// translateX(pos * card-step). pos -1 = buffer off-screen per il riciclo.
+// Carousel "flat": card grid 1×1 left-anchored (varianti --arch/--square); JS scrive --lm-cfl-pos, CSS fa translateX(pos * card-step), pos -1 = buffer off-screen.
 
 .lm-carousel-flat {
 	--lm-cfl-card-w: 445px;
@@ -18,8 +15,7 @@
 	--lm-cfl-card-h: calc( var(--lm-cfl-image-h) + 80px );
 	--lm-cfl-image-radius: 50% 50% 0 0;
 
-	// Mobile: una card a (quasi) tutto schermo (1.5rem dai bordi). Altezza immagine
-	// proporzionale alla larghezza (rapporto 445:435), così l'arco resta arrotondato.
+	// Mobile: una card a (quasi) tutto schermo; altezza immagine proporzionale alla width (445:435).
 	@media ( max-width: 768px ) {
 		--lm-cfl-card-w: calc( 100vw - 3rem );
 		--lm-cfl-image-h: calc( ( 100vw - 3rem ) * 435 / 445 );

@@ -1,9 +1,7 @@
 @use '../style/variables' as *;
 @use '../style/section-header';
 
-// Carousel "featured": due rail (immagini + box) sincronizzati su currentIndex.
-// Ogni rail è un CSS grid 1×1 con tutte le slide nella stessa cella; JS scrive
-// solo `--lm-cf-offset` per slide, CSS calcola `translateX(offset * gap)`.
+// Carousel "featured": due rail (immagini + box) grid 1×1; JS scrive --lm-cf-offset, CSS fa translateX(offset * gap).
 
 .lm-carousel-featured {
 	--lm-cf-image-center-w: 900px;
@@ -17,9 +15,7 @@
 
 	--lm-cf-row-gap: 50px;
 
-	// Mobile: una slide per volta a full-width. Gap = 100% (= 1 slide-width) per
-	// avere la slide adiacente esattamente off-screen senza usare 100vw (che
-	// includerebbe la scrollbar e creerebbe overflow orizzontale).
+	// Mobile: una slide full-width; gap 100% (no 100vw, che includerebbe la scrollbar).
 	@media ( max-width: 768px ) {
 		--lm-cf-image-center-w: 100%;
 		--lm-cf-image-center-h: 66.67vw;
@@ -27,8 +23,7 @@
 		--lm-cf-image-side-h: 66.67vw;
 		--lm-cf-image-gap: 100%;
 
-		// Box con 1.5rem di margin dal bordo schermo. Il +3rem nel gap compensa
-		// la box-width ridotta: (100% box + 3rem) = larghezza viewport.
+		// Box con 1.5rem dai bordi; +3rem nel gap compensa la box-width ridotta.
 		--lm-cf-box-w: calc( 100% - 3rem );
 		--lm-cf-box-gap: calc( 100% + 3rem );
 

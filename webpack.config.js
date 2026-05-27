@@ -1,6 +1,4 @@
-// Estende wp-scripts per aggiungere l'entry SCSS globale.
-// Con --experimental-modules la config è un array [scripts, modules]:
-// l'entry va aggiunta alla prima.
+// Estende wp-scripts con l'entry SCSS globale (aggiunta alla config "scripts").
 const path = require( 'path' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 

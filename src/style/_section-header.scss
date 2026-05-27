@@ -1,10 +1,6 @@
 @use 'variables' as *;
 
-// Header di sezione condiviso. Struttura HTML attesa:
-//   <header class="lm-section-header">
-//     <h2 class="lm-section-header__title">…</h2>
-//     <a class="lm-section-header__link" href="…">…</a>
-//   </header>
+// Header di sezione condiviso: header .lm-section-header con __title + __link.
 
 .lm-section-header {
 	display: flex;

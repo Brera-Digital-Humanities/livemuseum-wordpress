@@ -1,1 +1,41 @@
-.lm-search-bar{align-items:stretch;display:flex;margin:0 auto;max-width:32rem}.lm-search-bar__input{background-color:#fff;border:1px solid var(--wp--preset--color--base);border-radius:0;border-right:none;color:var(--wp--preset--color--contrast,#221919);flex:1 1 auto;font-size:var(--wp--preset--font-size--medium,1rem);min-width:0;padding:.75rem 1rem}.lm-search-bar__input:focus{outline:none}.lm-search-bar__button{background-color:var(--wp--preset--color--accent-1);border:1px solid var(--wp--preset--color--accent-1);border-radius:0;color:var(--wp--preset--color--base,#fff);cursor:pointer;flex:0 0 auto;font-size:var(--wp--preset--font-size--small,.875rem);font-weight:500;letter-spacing:.06em;padding:.75rem 1.5rem;text-transform:uppercase}.lm-search-bar__button:focus-visible,.lm-search-bar__button:hover{filter:brightness(.95)}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/@wordpress/scripts/node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/search-bar/style.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************/
+.lm-search-bar {
+  display: flex;
+  align-items: stretch;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+.lm-search-bar__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  font-size: var(--wp--preset--font-size--medium, 1rem);
+  color: var(--wp--preset--color--contrast, #221919);
+  background-color: #fff;
+  border: 1px solid var(--wp--preset--color--base);
+  border-right: none;
+  border-radius: 0;
+}
+.lm-search-bar__input:focus {
+  outline: none;
+}
+.lm-search-bar__button {
+  flex: 0 0 auto;
+  padding: 0.75rem 1.5rem;
+  font-size: var(--wp--preset--font-size--small, 0.875rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wp--preset--color--base, #fff);
+  background-color: var(--wp--preset--color--accent-1);
+  border: 1px solid var(--wp--preset--color--accent-1);
+  border-radius: 0;
+  cursor: pointer;
+}
+.lm-search-bar__button:hover, .lm-search-bar__button:focus-visible {
+  filter: brightness(0.95);
+}
+
+/*# sourceMappingURL=style-index.css.map*/

@@ -1,6 +1,5 @@
 // Layout globali (griglie, contenitori specifici di pagina, helper di posizione).
 
-
 button:focus, a:focus { outline: none; }
 
 .wp-block-quote{
@@ -8,7 +7,7 @@ button:focus, a:focus { outline: none; }
     background-color: var(--wp--preset--color--base);
     font-style: italic;
 }
-// Mobile: una card a (quasi) tutto schermo (1.5rem dai bordi).
+
 .header-desktop{display:block;}
 .header-mobile{display: none;}
 
@@ -26,7 +25,7 @@ button:focus, a:focus { outline: none; }
             flex-grow: 1;
         }
 
-        // Colonna centrale: il testo è già nascosto,collassata.
+        // Colonna centrale: testo già nascosto, qui la collassiamo.
         > .wp-block-column:nth-child(2) {
             flex-grow: 0;
             flex-basis: 0 !important;

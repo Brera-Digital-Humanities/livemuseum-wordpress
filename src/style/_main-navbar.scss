@@ -7,8 +7,7 @@
 	color: var( --wp--preset--color--accent-1 );
 }
 
-// Varianti di stile hover dei link di navigazione (registrate in functions.php).
-// La classe is-style-<name> è sul wrapper .wp-block-navigation-item.
+// Varianti hover dei link di navigazione (registrate in functions.php; classe is-style-<name> sul wrapper).
 .wp-block-navigation-item.is-style-hover-underline a:hover,
 .wp-block-navigation-item.is-style-hover-underline a:focus-visible {
 	text-decoration: underline;

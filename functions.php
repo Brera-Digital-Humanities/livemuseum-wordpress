@@ -127,8 +127,7 @@ add_action(
 	}
 );
 
-// Marca il link della pagina corrente nel blocco Navigation con aria-current="page".
-// Il menu classico renderizzato dal blocco non lo aggiunge da solo; lo stile è in _main-navbar.scss.
+// Marca il link della pagina corrente con aria-current="page" (il blocco Navigation non lo fa; stile in _main-navbar.scss).
 add_filter(
 	'render_block_core/navigation',
 	static function ( $content ) {

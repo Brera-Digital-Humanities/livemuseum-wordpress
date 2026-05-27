@@ -1,10 +1,6 @@
 @use 'variables' as *;
 
-// Barra di ricerca segnaposto. Struttura HTML attesa:
-//   <form class="lm-search-bar" action="…" method="get">
-//     <input class="lm-search-bar__input" … />
-//     <button class="lm-search-bar__button">…</button>
-//   </form>
+// Barra di ricerca segnaposto: form .lm-search-bar con __input + __button.
 
 .lm-search-bar {
 	display: flex;

@@ -1,7 +1,4 @@
-/**
- * Runtime Interactivity API del carousel "featured".
- * Calcoli puri in ./logic; qui DOM, eventi e store.
- */
+// Runtime Interactivity API del carousel "featured": DOM, eventi e store (calcoli in ./logic).
 import { store, getContext, getElement } from '@wordpress/interactivity';
 import {
 	nextIndex,
@@ -14,8 +11,7 @@ import {
 
 const STORE_NAMESPACE = 'livemuseum/carousel-featured';
 
-// Stato non-reattivo per istanza (touch coords): tenuto fuori da ctx
-// altrimenti i data-wp-watch rifirano in modo indesiderato.
+// Touch coords (stato non-reattivo) fuori da ctx: altrimenti data-wp-watch rifirerebbe.
 const instanceState = new WeakMap();
 
 function getInstanceState( ctx ) {
@@ -32,8 +28,7 @@ function applyRail( slides, total, currentIndex, transformFn, snapAll = false ) 
 		const offset = slideOffset( index, currentIndex, total );
 		const result = transformFn( offset );
 
-		// Snap istantaneo se: primo render (no fan-out dal centro) o wrap
-		// (offset cambiato di >1, slide salta da un lato all'altro).
+		// Snap istantaneo al primo render o quando una slide fa wrap (offset cambiato di >1).
 		const prevOffset = slide.dataset.lmOffset !== undefined
 			? parseInt( slide.dataset.lmOffset, 10 )
 			: offset;
@@ -56,8 +51,7 @@ function applyRail( slides, total, currentIndex, transformFn, snapAll = false ) 
 			slide.style.transition = '';
 		}
 
-		// Opacity dopo il restore transition → cambia con la transizione CSS.
-		// Al primo render dei box: CSS 0 → JS 1 → fade-in in posizione.
+		// Opacity dopo il restore della transition → fade-in CSS in posizione.
 		slide.style.opacity = String( result.opacity );
 	} );
 }

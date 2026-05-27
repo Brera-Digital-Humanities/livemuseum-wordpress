@@ -1,8 +1,4 @@
-/**
- * Runtime Interactivity API del carousel "flat": track left-anchored infinito.
- * Calcoli puri in ./logic. Il riciclo delle card avviene off-screen (snap senza
- * transition) così il movimento di riposizionamento non è mai visibile.
- */
+// Runtime Interactivity API del carousel "flat": track left-anchored infinito (calcoli in ./logic).
 import { store, getContext, getElement } from '@wordpress/interactivity';
 import { nextIndex, prevIndex, visibleCount, clampIndex, trackOffset } from './logic';
 
@@ -35,8 +31,7 @@ function measureVisible( ref ) {
 	return visibleCount( track.clientWidth, step );
 }
 
-// Avanza/indietreggia: infinito (wrap circolare) se ci sono più card di quante
-// ne entrano, altrimenti clamp (le card stanno tutte a video, niente scroll).
+// Avanza/indietreggia: wrap circolare se le card non entrano tutte, altrimenti clamp.
 function advance( ctx, ref, delta ) {
 	const visible = measureVisible( ref );
 	if ( ctx.total > visible ) {
@@ -56,9 +51,7 @@ function applyCards( ref, ctx, snapAll ) {
 	cards.forEach( ( cardEl, index ) => {
 		const offset = trackOffset( index, ctx.currentIndex, ctx.total, wrap );
 
-		// Snap (transition: none) al primo render e quando una card ricicla
-		// dall'altro lato (offset cambiato di >1): il riposizionamento avviene
-		// nel buffer off-screen, quindi non è visibile.
+		// Snap al primo render e al riciclo (offset cambiato di >1): avviene off-screen, non visibile.
 		const prev = cardEl.dataset.lmPos !== undefined
 			? parseInt( cardEl.dataset.lmPos, 10 )
 			: offset;

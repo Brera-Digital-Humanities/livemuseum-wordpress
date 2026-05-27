@@ -50,8 +50,7 @@ switch ( $post_source ) {
 		break;
 }
 
-// Categorie da mostrare nel badge: filtro per categoria → solo quelle del
-// filtro; all → tutte le categorie del post.
+// Categorie nel badge: con filtro categoria solo quelle del filtro, con "all" tutte.
 $highlight_cat_ids = null;
 if ( 'current_category' === $post_source ) {
 	$queried = get_queried_object();
@@ -96,8 +95,7 @@ wp_reset_postdata();
 
 $total = count( $cards );
 
-// In modalità "fixed" si mostrano tutte le card renderizzate (nessun infinite
-// scroll); in "infinite" si parte da $initial_count e si carica a batch.
+// "fixed": tutte le card; "infinite": parte da $initial_count e carica a batch.
 $visible_count = 'fixed' === $pagination_mode ? $total : min( $initial_count, $total );
 
 $context = array(
